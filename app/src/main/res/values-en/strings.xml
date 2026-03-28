@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Workout Tracker</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_cardio">Cardio</string>
+    <string name="nav_programs">Programs</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_tools">Tools</string>
+
+    <!-- Calendar Screen -->
+    <string name="calendar_title">Workout Tracker</string>
+    <string name="recent_workouts">Recent Workouts</string>
+    <string name="no_workouts_yet">No workouts yet</string>
+    <string name="tap_to_log">Tap any past day to log your first workout!</string>
+
+    <!-- Workout Detail -->
+    <string name="add_exercise">Add Exercise</string>
+    <string name="no_exercises_yet">No exercises yet</string>
+    <string name="tap_add_exercise">Tap \'+ Add Exercise\' to get started</string>
+    <string name="log_set">Log Set</string>
+    <string name="reps">Reps</string>
+    <string name="weight_kg">Weight (kg)</string>
+    <string name="weight_lbs">Weight (lbs)</string>
+    <string name="bodyweight">Bodyweight</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="last_session">Last session</string>
+    <string name="smart_suggestion">Smart suggestion</string>
+    <string name="est_1rm">Est. 1RM</string>
+    <string name="sets">Sets</string>
+    <string name="notes">Notes</string>
+    <string name="workout_notes">Workout Notes</string>
+    <string name="save_as_template">Save as Template</string>
+    <string name="template_name">Template name</string>
+    <string name="saved_as_template">Saved as template ✓</string>
+
+    <!-- Workout Summary -->
+    <string name="workout_complete">Workout Complete!</string>
+    <string name="exercises">Exercises</string>
+    <string name="total_sets">Total Sets</string>
+    <string name="total_volume">Total volume</string>
+    <string name="done">Done</string>
+
+    <!-- Cardio -->
+    <string name="cardio_title">Cardio</string>
+    <string name="log_cardio">Log Cardio</string>
+    <string name="track_cardio">Track your walks, runs, and more</string>
+    <string name="no_cardio_yet">No cardio logged yet</string>
+    <string name="distance_km">Distance (km) — optional</string>
+    <string name="duration_min">Duration (minutes) — optional</string>
+    <string name="weight_carried">Weight carried (kg) — optional</string>
+    <string name="calories_burned">Calories burned — optional</string>
+    <string name="type">Type</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+
+    <!-- Programs -->
+    <string name="programs_title">Training Programs</string>
+    <string name="choose_program">Choose a program and follow the plan</string>
+    <string name="weeks">weeks</string>
+    <string name="per_week">x / week</string>
+    <string name="load_day">Load Day into Workout</string>
+    <string name="weekly_schedule">Weekly Schedule</string>
+    <string name="rest_day">Rest day — recovery is where you grow!</string>
+    <string name="which_day">Which day to load?</string>
+    <string name="exercises_added_today">Exercises will be added to today\'s workout</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Stats &amp; History</string>
+    <string name="overview">Overview</string>
+    <string name="this_week">This Week</string>
+    <string name="records">Records</string>
+    <string name="workouts">Workouts</string>
+    <string name="total_volume_lifted">Total Volume Lifted</string>
+    <string name="top_exercises">Top Exercises</string>
+    <string name="personal_records">Personal Records</string>
+    <string name="personal_best">Personal best</string>
+    <string name="strength">Strength</string>
+    <string name="distance">Distance</string>
+    <string name="sessions">Sessions</string>
+    <string name="no_data_yet">Log workouts to see your stats</string>
+
+    <!-- Tools -->
+    <string name="tools_title">Tools</string>
+    <string name="utilities_settings">Utilities and settings</string>
+    <string name="workout_templates">Workout Templates</string>
+    <string name="exercise_history">Exercise History</string>
+    <string name="body_weight_log">Body Weight Log</string>
+    <string name="plate_calculator">Plate Calculator</string>
+    <string name="export_csv">Export to CSV</string>
+    <string name="cloud_backup">Cloud Backup</string>
+    <string name="theme">Theme</string>
+    <string name="dark_mode">Dark mode</string>
+    <string name="light_mode">Light mode</string>
+    <string name="weight_unit">Weight Unit</string>
+    <string name="kilograms">Kilograms (kg)</string>
+    <string name="pounds">Pounds (lbs)</string>
+    <string name="send_feedback">Send feedback</string>
+    <string name="language">Language</string>
+
+    <!-- Bodyweight -->
+    <string name="bodyweight_title">Body Weight</string>
+    <string name="track_weight">Track your weight over time</string>
+    <string name="log_weight">Log Weight</string>
+    <string name="current">Current</string>
+    <string name="total_change">Total change</string>
+    <string name="progress">Progress</string>
+    <string name="history">History</string>
+
+    <!-- Plate Calculator -->
+    <string name="plate_calc_title">Plate Calculator</string>
+    <string name="target_weight">Target weight (kg)</string>
+    <string name="bar_weight">Bar weight</string>
+    <string name="per_side">Per Side</string>
+    <string name="no_plates">No plates needed — bar weight only</string>
+
+    <!-- Cloud Backup -->
+    <string name="cloud_title">Cloud Backup</string>
+    <string name="optional_backup">Completely optional — your data already lives safely on your phone</string>
+    <string name="no_account_needed">No account needed</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="backup_now">Back Up to Cloud Now</string>
+    <string name="restore_from_cloud">Restore from Cloud</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="never_backed_up">Never backed up</string>
+    <string name="last_backup">Last backup: %1$s</string>
+    <string name="upload_complete">Upload complete</string>
+    <string name="restore_complete">Restore complete</string>
+
+    <!-- Onboarding -->
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="lets_go">Let\'s Go! 🚀</string>
+
+    <!-- General -->
+    <string name="loading">Loading…</string>
+    <string name="error_try_again">Something went wrong. Please try again.</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="close">Close</string>
+    <string name="search">Search…</string>
+    <string name="optional">optional</string>
+    <string name="active">Active</string>
+    <string name="difficulty_beginner">Beginner</string>
+    <string name="difficulty_intermediate">Intermediate</string>
+    <string name="difficulty_advanced">Advanced</string>
+</resources>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Workout Tracker</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_calendar">Calendrier</string>
+    <string name="nav_cardio">Cardio</string>
+    <string name="nav_programs">Programmes</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_tools">Outils</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">Workout Tracker</string>
+    <string name="recent_workouts">Entraînements récents</string>
+    <string name="no_workouts_yet">Pas encore d\'entraînements</string>
+    <string name="tap_to_log">Appuyez sur un jour passé pour enregistrer votre premier entraînement !</string>
+
+    <!-- Workout Detail -->
+    <string name="add_exercise">Ajouter un exercice</string>
+    <string name="no_exercises_yet">Pas encore d\'exercices</string>
+    <string name="tap_add_exercise">Appuyez sur \'+ Ajouter un exercice\' pour commencer</string>
+    <string name="log_set">Enregistrer une série</string>
+    <string name="reps">Reps</string>
+    <string name="weight_kg">Poids (kg)</string>
+    <string name="weight_lbs">Poids (lbs)</string>
+    <string name="bodyweight">Poids de corps</string>
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+    <string name="delete">Supprimer</string>
+    <string name="last_session">Dernière séance</string>
+    <string name="smart_suggestion">Suggestion intelligente</string>
+    <string name="est_1rm">1RM est.</string>
+    <string name="sets">Séries</string>
+    <string name="notes">Notes</string>
+    <string name="workout_notes">Notes d\'entraînement</string>
+    <string name="save_as_template">Enregistrer comme modèle</string>
+    <string name="template_name">Nom du modèle</string>
+    <string name="saved_as_template">Enregistré comme modèle ✓</string>
+
+    <!-- Workout Summary -->
+    <string name="workout_complete">Entraînement terminé !</string>
+    <string name="exercises">Exercices</string>
+    <string name="total_sets">Total séries</string>
+    <string name="total_volume">Volume total</string>
+    <string name="done">Terminé</string>
+
+    <!-- Cardio -->
+    <string name="cardio_title">Cardio</string>
+    <string name="log_cardio">Enregistrer cardio</string>
+    <string name="track_cardio">Suivez vos marches, courses et plus</string>
+    <string name="no_cardio_yet">Aucun cardio enregistré</string>
+    <string name="distance_km">Distance (km) — facultatif</string>
+    <string name="duration_min">Durée (minutes) — facultatif</string>
+    <string name="weight_carried">Poids porté (kg) — facultatif</string>
+    <string name="calories_burned">Calories brûlées — facultatif</string>
+    <string name="type">Type</string>
+    <string name="today">Aujourd\'hui</string>
+    <string name="yesterday">Hier</string>
+
+    <!-- Programs -->
+    <string name="programs_title">Programmes d\'entraînement</string>
+    <string name="choose_program">Choisissez un programme et suivez le plan</string>
+    <string name="weeks">semaines</string>
+    <string name="per_week">x / semaine</string>
+    <string name="load_day">Charger le jour dans l\'entraînement</string>
+    <string name="weekly_schedule">Planning hebdomadaire</string>
+    <string name="rest_day">Jour de repos — la récupération, c\'est là qu\'on progresse !</string>
+    <string name="which_day">Quel jour charger ?</string>
+    <string name="exercises_added_today">Les exercices seront ajoutés à l\'entraînement d\'aujourd\'hui</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Stats &amp; Historique</string>
+    <string name="overview">Aperçu</string>
+    <string name="this_week">Cette semaine</string>
+    <string name="records">Records</string>
+    <string name="workouts">Entraînements</string>
+    <string name="total_volume_lifted">Volume total soulevé</string>
+    <string name="top_exercises">Meilleurs exercices</string>
+    <string name="personal_records">Records personnels</string>
+    <string name="personal_best">Record personnel</string>
+    <string name="strength">Force</string>
+    <string name="distance">Distance</string>
+    <string name="sessions">Séances</string>
+    <string name="no_data_yet">Enregistrez des entraînements pour voir vos stats</string>
+
+    <!-- Tools -->
+    <string name="tools_title">Outils</string>
+    <string name="utilities_settings">Utilitaires et paramètres</string>
+    <string name="workout_templates">Modèles d\'entraînement</string>
+    <string name="exercise_history">Historique des exercices</string>
+    <string name="body_weight_log">Journal de poids</string>
+    <string name="plate_calculator">Calculateur de disques</string>
+    <string name="export_csv">Exporter en CSV</string>
+    <string name="cloud_backup">Sauvegarde Cloud</string>
+    <string name="theme">Thème</string>
+    <string name="dark_mode">Mode sombre</string>
+    <string name="light_mode">Mode clair</string>
+    <string name="weight_unit">Unité de poids</string>
+    <string name="kilograms">Kilogrammes (kg)</string>
+    <string name="pounds">Livres (lbs)</string>
+    <string name="send_feedback">Envoyer des commentaires</string>
+    <string name="language">Langue</string>
+
+    <!-- Bodyweight -->
+    <string name="bodyweight_title">Poids de corps</string>
+    <string name="track_weight">Suivez votre poids au fil du temps</string>
+    <string name="log_weight">Enregistrer le poids</string>
+    <string name="current">Actuel</string>
+    <string name="total_change">Changement total</string>
+    <string name="progress">Progrès</string>
+    <string name="history">Historique</string>
+
+    <!-- Plate Calculator -->
+    <string name="plate_calc_title">Calculateur de disques</string>
+    <string name="target_weight">Poids cible (kg)</string>
+    <string name="bar_weight">Poids de la barre</string>
+    <string name="per_side">Par côté</string>
+    <string name="no_plates">Pas besoin de disques — poids de la barre uniquement</string>
+
+    <!-- Cloud Backup -->
+    <string name="cloud_title">Sauvegarde Cloud</string>
+    <string name="optional_backup">Complètement facultatif — vos données sont déjà en sécurité sur votre téléphone</string>
+    <string name="no_account_needed">Aucun compte requis</string>
+    <string name="sign_in_google">Se connecter avec Google</string>
+    <string name="backup_now">Sauvegarder sur le Cloud maintenant</string>
+    <string name="restore_from_cloud">Restaurer depuis le Cloud</string>
+    <string name="sign_out">Se déconnecter</string>
+    <string name="never_backed_up">Jamais sauvegardé</string>
+    <string name="last_backup">Dernière sauvegarde : %1$s</string>
+    <string name="upload_complete">Téléchargement terminé</string>
+    <string name="restore_complete">Restauration terminée</string>
+
+    <!-- Onboarding -->
+    <string name="next">Suivant</string>
+    <string name="skip">Passer</string>
+    <string name="lets_go">C\'est parti ! 🚀</string>
+
+    <!-- General -->
+    <string name="loading">Chargement…</string>
+    <string name="error_try_again">Un problème est survenu. Veuillez réessayer.</string>
+    <string name="add">Ajouter</string>
+    <string name="edit">Modifier</string>
+    <string name="close">Fermer</string>
+    <string name="search">Rechercher…</string>
+    <string name="optional">facultatif</string>
+    <string name="active">Actif</string>
+    <string name="difficulty_beginner">Débutant</string>
+    <string name="difficulty_intermediate">Intermédiaire</string>
+    <string name="difficulty_advanced">Avancé</string>
+</resources>

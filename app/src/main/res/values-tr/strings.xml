@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Workout Tracker</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_calendar">Takvim</string>
+    <string name="nav_cardio">Kardiyo</string>
+    <string name="nav_programs">Programlar</string>
+    <string name="nav_stats">İstatistik</string>
+    <string name="nav_tools">Araçlar</string>
+
+    <!-- Calendar Screen -->
+    <string name="calendar_title">Workout Tracker</string>
+    <string name="recent_workouts">Son Antrenmanlar</string>
+    <string name="no_workouts_yet">Henüz antrenman yok</string>
+    <string name="tap_to_log">İlk antrenmanını kaydetmek için geçmiş bir güne dokun!</string>
+
+    <!-- Workout Detail -->
+    <string name="add_exercise">Egzersiz Ekle</string>
+    <string name="no_exercises_yet">Henüz egzersiz yok</string>
+    <string name="tap_add_exercise">Başlamak için \'+ Egzersiz Ekle\'ye dokun</string>
+    <string name="log_set">Set Kaydet</string>
+    <string name="reps">Tekrar</string>
+    <string name="weight_kg">Ağırlık (kg)</string>
+    <string name="weight_lbs">Ağırlık (lbs)</string>
+    <string name="bodyweight">Vücut Ağırlığı</string>
+    <string name="save">Kaydet</string>
+    <string name="cancel">İptal</string>
+    <string name="delete">Sil</string>
+    <string name="last_session">Son seans</string>
+    <string name="smart_suggestion">Akıllı öneri</string>
+    <string name="est_1rm">Tahmini 1TM</string>
+    <string name="sets">Set</string>
+    <string name="notes">Notlar</string>
+    <string name="workout_notes">Antrenman Notları</string>
+    <string name="save_as_template">Şablon Olarak Kaydet</string>
+    <string name="template_name">Şablon adı</string>
+    <string name="saved_as_template">Şablon olarak kaydedildi ✓</string>
+    <string name="active_workout">Aktif Antrenman</string>
+    <string name="duration">Süre</string>
+    <string name="ready_to_train">Antrenmana hazır mısın?</string>
+    <string name="start_live_session_desc">Canlı oturumu takip etmek için zamanlayıcıyı başlatın</string>
+    <string name="start_workout">Antrenmanı Başlat</string>
+    <string name="finish">BİTİR</string>
+
+    <!-- Workout Summary -->
+    <string name="workout_complete">Antrenman Tamamlandı!</string>
+    <string name="exercises">Egzersiz</string>
+    <string name="total_sets">Toplam Set</string>
+    <string name="total_volume">Toplam hacim</string>
+    <string name="done">Tamam</string>
+
+    <!-- Cardio -->
+    <string name="cardio_title">Kardiyo</string>
+    <string name="log_cardio">Kardiyo Kaydet</string>
+    <string name="track_cardio">Yürüyüş, koşu ve daha fazlasını takip et</string>
+    <string name="no_cardio_yet">Henüz kardiyo kaydedilmedi</string>
+    <string name="distance_km">Mesafe (km)</string>
+    <string name="duration_min">Süre (dakika)</string>
+    <string name="weight_carried">Taşınan ağırlık (kg)</string>
+    <string name="calories_burned">Yakılan kalori</string>
+    <string name="type">Tür</string>
+    <string name="today">Bugün</string>
+    <string name="yesterday">Dün</string>
+
+    <!-- Programs -->
+    <string name="programs_title">Antrenman Programları</string>
+    <string name="choose_program">Bir program seç ve planı takip et</string>
+    <string name="weeks">hafta</string>
+    <string name="per_week">x / hafta</string>
+    <string name="load_day">Günü Antrenmana Yükle</string>
+    <string name="weekly_schedule">Haftalık Program</string>
+    <string name="rest_day">Dinlenme günü — büyüme burada gerçekleşir!</string>
+    <string name="which_day">Hangi günü yüklemek istiyorsun?</string>
+    <string name="exercises_added_today">Egzersizler bugünkü antrenmana eklenecek</string>
+
+    <!-- Stats -->
+    <string name="stats_title">İstatistik ve Geçmiş</string>
+    <string name="overview">Genel Bakış</string>
+    <string name="this_week">Bu Hafta</string>
+    <string name="records">Rekorlar</string>
+    <string name="workouts">Antrenman</string>
+    <string name="total_volume_lifted">Toplam Kaldırılan Hacim</string>
+    <string name="top_exercises">En Çok Yapılan Egzersizler</string>
+    <string name="personal_records">Kişisel Rekorlar</string>
+    <string name="personal_best">Kişisel en iyi</string>
+    <string name="strength">Kuvvet</string>
+    <string name="distance">Mesafe</string>
+    <string name="sessions">Seans</string>
+    <string name="no_data_yet">İstatistikleri görmek için antrenman kaydet</string>
+    <string name="volume_trend">Hacim Trendi</string>
+    <string name="volume_trend_subtitle">Zaman içindeki seans başına toplam hacim</string>
+    <string name="muscle_distribution">Kas Dağılımı</string>
+    <string name="muscle_distribution_subtitle">Kas grubu başına toplam set dökümü</string>
+    <string name="muscle_breakdown_empty">Kas dökümünüzü görmek için egzersiz kaydedin</string>
+    <string name="unit_sets">set</string>
+    <string name="unit_exercises">egzersiz</string>
+
+    <!-- Tools -->
+    <string name="tools_title">Araçlar</string>
+    <string name="utilities_settings">Araçlar ve ayarlar</string>
+    <string name="workout_templates">Antrenman Şablonları</string>
+    <string name="exercise_history">Egzersiz Geçmişi</string>
+    <string name="body_weight_log">Vücut Ağırlığı Takibi</string>
+    <string name="plate_calculator">Plaka Hesaplayıcı</string>
+    <string name="export_csv">CSV Olarak Dışa Aktar</string>
+    <string name="cloud_backup">Bulut Yedekleme</string>
+    <string name="theme">Tema</string>
+    <string name="dark_mode">Karanlık mod</string>
+    <string name="light_mode">Aydınlık mod</string>
+    <string name="weight_unit">Ağırlık Birimi</string>
+    <string name="kilograms">Kilogram (kg)</string>
+    <string name="pounds">Pound (lbs)</string>
+    <string name="send_feedback">Geri bildirim gönder</string>
+    <string name="language">Dil</string>
+    <string name="rest_timer">Dinlenme Süresi</string>
+    <string name="auto_start_desc">Set sonrası otomatik başlat: %1$ds</string>
+    <string name="disabled">Devre dışı</string>
+    <string name="rest_timer_settings">Dinlenme Süresi Ayarları</string>
+    <string name="rest_timer_desc">Kaydettiğiniz her setten sonra dinlenme süresini otomatik başlatır.</string>
+    <string name="seconds">saniye</string>
+
+    <!-- Bodyweight -->
+    <string name="bodyweight_title">Vücut Ağırlığı</string>
+    <string name="track_weight">Zaman içindeki ağırlık değişimini takip et</string>
+    <string name="log_weight">Ağırlık Kaydet</string>
+    <string name="current">Güncel</string>
+    <string name="total_change">Toplam değişim</string>
+    <string name="progress">İlerleme</string>
+    <string name="history">Geçmiş</string>
+
+    <!-- Plate Calculator -->
+    <string name="plate_calc_title">Plaka Hesaplayıcı</string>
+    <string name="target_weight">Hedef ağırlık (kg)</string>
+    <string name="bar_weight">Bar ağırlığı</string>
+    <string name="per_side">Her Taraf İçin</string>
+    <string name="no_plates">Plakaya gerek yok — sadece bar ağırlığı</string>
+
+    <!-- Cloud Backup -->
+    <string name="cloud_title">Bulut Yedekleme</string>
+    <string name="optional_backup">Tamamen isteğe bağlı — verileriniz telefonunuzda güvende</string>
+    <string name="no_account_needed">Hesap gerekmez</string>
+    <string name="no_account_desc">Verileriniz zaten telefonunuzda saklanır ve herhangi bir hesap olmadan çalışır. Telefon değiştirmeniz veya cihazınızı kaybetmeniz durumunda isteğe bağlı bir bulut yedeklemesi isterseniz, aşağıdan Google ile giriş yapabilirsiniz.</string>
+    <string name="signed_in">Giriş yapıldı</string>
+    <string name="sign_in_google">Google ile Giriş Yap</string>
+    <string name="backup_now">Şimdi Buluta Yedekle</string>
+    <string name="restore_from_cloud">Buluttan Geri Yükle</string>
+    <string name="sign_out">Çıkış Yap</string>
+    <string name="never_backed_up">Hiç yedeklenmedi</string>
+    <string name="last_backup">Son yedek: %1$s</string>
+    <string name="restore_confirm_title">Buluttan Geri Yüklensin mi?</string>
+    <string name="restore_confirm_desc">Bu işlem bulut verilerini mevcut verilerinizle birleştirecektir. Telefonunuzdaki hiçbir şey silinmeyecek — bulut verileri üstüne eklenecektir.</string>
+    <string name="restore_button">Geri Yükle</string>
+    <string name="data_private_title">Verileriniz gizlidir</string>
+    <string name="security_point_1">Google sunucularında aktarım sırasında ve bekleme modunda şifrelenir</string>
+    <string name="security_point_2">Güvenlik kuralları, verilerinizi yalnızca sizin okuyabilmenizi veya yazabilmenizi sağlar — bir Firebase yöneticisi bile buna erişemez</string>
+    <string name="security_point_3">Uygulama %100 çevrimdışı çalışır — bulut yalnızca bir yedeklemedir, bir gereklilik değildir</string>
+    <string name="security_point_4">Hesabınızı silerek tüm bulut verilerini istediğiniz zaman silebilirsiniz</string>
+
+    <!-- Onboarding -->
+    <string name="next">İleri</string>
+    <string name="skip">Atla</string>
+    <string name="lets_go">Hadi Başlayalım! 🚀</string>
+
+    <!-- General -->
+    <string name="loading">Yükleniyor…</string>
+    <string name="error_try_again">Bir şeyler ters gitti. Lütfen tekrar deneyin.</string>
+    <string name="add">Ekle</string>
+    <string name="edit">Düzenle</string>
+    <string name="close">Kapat</string>
+    <string name="search">Ara…</string>
+    <string name="optional">isteğe bağlı</string>
+    <string name="active">Aktif</string>
+    <string name="difficulty_beginner">Başlangıç</string>
+    <string name="difficulty_intermediate">Orta</string>
+    <string name="difficulty_advanced">İleri</string>
+</resources>
