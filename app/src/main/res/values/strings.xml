@@ -148,6 +148,8 @@
     <string name="sign_out">Sign Out</string>
     <string name="never_backed_up">Never backed up</string>
     <string name="last_backup">Last backup: %1$s</string>
+    <string name="upload_complete">Upload complete</string>
+    <string name="restore_complete">Restore complete</string>
     <string name="restore_confirm_title">Restore from Cloud?</string>
     <string name="restore_confirm_desc">This will merge cloud data into your current data. Nothing on your phone will be deleted — cloud data is added on top.</string>
     <string name="restore_button">Restore</string>
