@@ -1,53 +1,102 @@
-# Workout Tracker App
+# 🏋️ Workout Tracker
 
-## Overview
+A modern Android workout tracking application built with Kotlin, designed to help users log, manage, and track their workouts efficiently.
 
-Workout Tracker is a mobile application that allows users to log workouts, track exercise progress, and keep their training history organized.
-The app stores workout data locally and can optionally synchronize data to the cloud using **Firebase**.
+---
 
-## Features
+## 🚀 Features
 
-* Create and log workouts
-* Track exercises, sets, and reps
-* View workout history
-* Local storage using **Room Database**
-* Optional cloud backup using **Firebase**
-* Google account authentication
+- 📝 Create and manage workout sessions
+- 💪 Track exercises and progress
+- 💾 Local data persistence using Room
+- ☁️ Optional cloud sync with Firebase (in progress)
+- 🔐 Google account integration (optional)
+- ⚠️ Input validation and error handling
+- 💬 Feedback system included
 
-## Tech Stack
+---
 
-* Kotlin
-* Android
-* Room Database
-* Firebase Authentication
-* Firebase Firestore
-* MVVM architecture
+## 📱 Screenshots
 
-## Architecture
+<p align="center">
+  <img src="screenshots/exercises.jpeg" width="250"/>
+  <img src="screenshots/home.jpeg" width="250"/>
+  <img src="screenshots/programs.jpeg" width="250"/>
+  <img src="screenshots/tools.jpeg" width="250"/>
+</p>
 
-UI → ViewModel → Repository → Room Database / Firebase
+---
 
-## Screens
+## 📦 Download
 
-* Workout Logging
-* Workout History
-* Calendar View
-* Exercise Tracking
+[Download APK v1.0.0](https://github.com/cr0sz/Workout-Tracker/releases)
+---
 
-## Installation
+## 🛠️ Tech Stack
 
-1. Clone the repository
-2. Open the project in Android Studio
-3. Add your Firebase configuration file
-4. Run the application
+- Kotlin
+- Android SDK
+- Room Database
+- Firebase Authentication
+- Cloud Firestore
+- MVVM Architecture
 
-## Future Improvements
+---
 
-* Workout progress graphs
-* Personal record tracking
-* Export workouts (CSV/JSON)
-* Social workout sharing
+## ⚙️ Installation
 
-## Author
+1. Download the APK from the Releases section
+2. Enable "Install from unknown sources"
+3. Install and launch the app
 
-Built as a portfolio project.
+---
+
+## 🧠 Architecture
+
+The app follows **MVVM architecture** for clean separation of concerns:
+
+- **Model** → Room database & data layer  
+- **ViewModel** → Business logic & state management  
+- **View** → UI (Activities / Fragments)
+
+---
+
+## 📡 Offline & Sync
+
+- App works fully offline using Room
+- Firebase sync is optional and currently under improvement
+
+---
+
+## 📌 What I Learned
+
+- Android app architecture (MVVM)
+- Local database management with Room
+- Firebase integration basics
+- Error handling & input validation
+- Building and publishing a release APK
+
+---
+
+## 🔮 Future Improvements
+
+- Improve Firebase cloud sync
+- Add workout analytics / charts
+- Better UI/UX polish
+- Export / import workouts
+- Dark mode improvements
+
+---
+
+## 👨‍💻 Author
+
+**Bekir Akyüz**
+
+- GitHub: https://github.com/cr0sz
+- LinkedIn: https://www.linkedin.com/in/bekiraky%C3%BCz/
+
+---
+
+## ⭐ Support
+
+If you like this project, consider giving it a star ⭐
