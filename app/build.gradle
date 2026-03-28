@@ -10,7 +10,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.workouttracker"
+        applicationId "com.workoutttracker"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -26,7 +26,7 @@ android {
             // Fixed the path to use forward slashes for better compatibility
             storeFile file("C:/Users/bekir/Documents/projeler/keys/work")
             storePassword "suCuk0123!"
-            keyAlias "work"
+            keyAlias "workout"
             keyPassword "suCuk0123!"
         }
     }
