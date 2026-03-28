@@ -1,6 +1,6 @@
 # Workout Tracker
 
-An Android app for logging and managing workout sessions. Built with Kotlin and MVVM architecture, with full offline support via Room database.
+An Android app for logging and managing workout sessions. Built with Kotlin and MVVM architecture, with full offline support and optional Firebase cloud sync.
 
 <br>
 
@@ -10,7 +10,7 @@ An Android app for logging and managing workout sessions. Built with Kotlin and 
 
 ## Download
 
-**[Download APK v1.0.0](https://github.com/cr0sz/Workout-Tracker/releases/tag/v1.0.0)**
+**[Download APK v1.1.0](https://github.com/cr0sz/Workout-Tracker/releases/tag/v1.1.0)**
 
 > Enable "Install from unknown sources" in your Android settings before installing.
 
@@ -21,6 +21,9 @@ An Android app for logging and managing workout sessions. Built with Kotlin and 
 - Create and manage workout programs
 - Log exercises with sets, reps, and weights
 - Full offline support — no internet required
+- Cloud sync via Firebase Firestore
+- Google account authentication
+- Export workouts as CSV
 - Input validation and error handling
 - Clean, minimal UI
 
@@ -33,9 +36,9 @@ An Android app for logging and managing workout sessions. Built with Kotlin and 
 | Language | Kotlin |
 | Architecture | MVVM |
 | Local database | Room (SQLite) |
+| Cloud database | Firebase Firestore |
+| Authentication | Firebase Auth (Google Sign-In) |
 | UI | Android SDK, Jetpack components |
-| Auth (planned) | Firebase Authentication |
-| Cloud sync (planned) | Cloud Firestore |
 
 <br>
 
@@ -50,7 +53,7 @@ ViewModel Layer (business logic, state management)
     ↕
 Repository Layer
     ↕
-Room Database (local persistence)
+Room Database (local)   ←→   Firebase Firestore (cloud)
 ```
 
 This structure keeps the UI completely independent from the data layer, making the codebase easy to maintain and extend.
@@ -68,20 +71,22 @@ git clone https://github.com/cr0sz/Workout-Tracker.git
 
 3. Add your own `google-services.json` from [Firebase Console](https://console.firebase.google.com/) to `/app`
 
-4. Build and run on an emulator or physical device
+4. Register your debug SHA-1 fingerprint in Firebase Console → Project Settings → Your apps
+
+5. Build and run on an emulator or physical device
 
 <br>
 
 ## Roadmap
 
-- [ ] Firebase cloud sync
 - [ ] Workout analytics and progress charts
-- [ ] Export / import workouts
-- [ ] Widget for quick logging
+- [ ] ML-powered workout recommendations
+- [ ] Import workouts from CSV
+- [ ] Home screen widget for quick logging
 
 <br>
 
 ## Author
 
 **Bekir Akyüz**
-[github.com/cr0sz](https://github.com/cr0sz) · [linkedin.com/in/bekirakyüz](https://www.linkedin.com/in/bekiraky%C3%BCz/)
+[github.com/cr0sz](https://github.com/cr0sz) · [linkedin.com/in/bekirakyüz](www.linkedin.com/in/bekirakyüz)
