@@ -5,6 +5,13 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+// Load local.properties to access signing passwords securely
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+}
+
 android {
     namespace 'com.workouttracker'
     compileSdk 34
@@ -23,23 +30,21 @@ android {
 
     signingConfigs {
         release {
-            // Fixed the path to use forward slashes for better compatibility
             storeFile file("C:/Users/bekir/Documents/projeler/keys/work")
-            storePassword "suCuk0123!"
+            storePassword localProperties.getProperty("RELEASE_STORE_PASSWORD") ?: ""
             keyAlias "workout"
-            keyPassword "suCuk0123!"
+            keyPassword localProperties.getProperty("RELEASE_KEY_PASSWORD") ?: ""
         }
     }
 
     buildTypes {
         release {
-            minifyEnabled true // Optimized for production
+            minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
         debug {
-            // Removed suffix to prevent conflict with google-services.json
             debuggable true
         }
     }
@@ -55,6 +60,7 @@ android {
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 
     composeOptions {
@@ -63,7 +69,11 @@ android {
 
     packagingOptions {
         resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += [
+                '/META-INF/{AL2.0,LGPL2.1}',
+                'DebugProbesKt.bin',
+                'META-INF/version-control-info.textproto'
+            ]
         }
     }
 }
@@ -84,12 +94,14 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.6.2'
 
-    // Room
     implementation 'androidx.room:room-runtime:2.6.1'
     implementation 'androidx.room:room-ktx:2.6.1'
     ksp 'androidx.room:room-compiler:2.6.1'
+    
+    implementation "net.zetetic:android-database-sqlcipher:4.5.4"
+    implementation "androidx.sqlite:sqlite-ktx:2.4.0"
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
 
-    // Firebase
     implementation 'com.google.firebase:firebase-auth-ktx:22.3.1'
     implementation 'com.google.firebase:firebase-firestore-ktx:24.10.0'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'

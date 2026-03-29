@@ -1,32 +1,40 @@
 package com.workouttracker
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Construction
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -56,15 +64,30 @@ fun WorkoutTrackerApp() {
     val isDarkTheme by appViewModel.isDarkTheme.collectAsStateWithLifecycle()
     val useLbs      by appViewModel.useLbs.collectAsStateWithLifecycle()
     val activeTimer by appViewModel.activeTimerSeconds.collectAsStateWithLifecycle()
+    val timerEnabled by appViewModel.timerEnabled.collectAsStateWithLifecycle()
+
+    // P2-B. POST_NOTIFICATIONS runtime request helper
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            // Gracefully degrade: notification won't show, but app continues
+        }
+    }
+
+    // Trigger permission request ONLY when rest timer is first enabled
+    LaunchedEffect(timerEnabled) {
+        if (timerEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     WorkoutTrackerTheme(darkTheme = isDarkTheme) {
-        val context = LocalContext.current
-        
-        // Check if onboarding has been completed (stored in SharedPreferences)
+        // Check if onboarding has been completed
         val prefs = remember { context.getSharedPreferences("wt_prefs", Context.MODE_PRIVATE) }
         var onboardingDone by remember { mutableStateOf(prefs.getBoolean("onboarding_done", false)) }
 
-        // Show onboarding on first ever launch
         if (!onboardingDone) {
             OnboardingScreen(
                 onFinish = {
@@ -80,7 +103,6 @@ fun WorkoutTrackerApp() {
         val navBackStack  by navController.currentBackStackEntryAsState()
         val currentRoute  = navBackStack?.destination?.route
 
-        // Global error handler — listens to AppErrorBus and shows a snackbar
         val snackbarHostState = remember { SnackbarHostState() }
         val errorMessage by com.workouttracker.ui.util.AppErrorBus.error.collectAsStateWithLifecycle()
         
@@ -93,7 +115,7 @@ fun WorkoutTrackerApp() {
 
         val bottomNavItems = listOf(
             BottomNavItem(context.getString(R.string.nav_calendar), Routes.CALENDAR, Icons.Filled.CalendarMonth,  Icons.Outlined.CalendarMonth),
-            BottomNavItem(context.getString(R.string.nav_cardio),   Routes.CARDIO,   Icons.Filled.DirectionsRun,  Icons.Outlined.DirectionsRun),
+            BottomNavItem(context.getString(R.string.nav_cardio),   Routes.CARDIO,   Icons.AutoMirrored.Filled.DirectionsRun,  Icons.AutoMirrored.Outlined.DirectionsRun),
             BottomNavItem(context.getString(R.string.nav_programs), Routes.PROGRAMS, Icons.Filled.FitnessCenter,  Icons.Outlined.FitnessCenter),
             BottomNavItem(context.getString(R.string.nav_stats),    Routes.HISTORY,  Icons.Filled.BarChart,       Icons.Outlined.BarChart),
             BottomNavItem(context.getString(R.string.nav_tools),    Routes.TOOLS,    Icons.Filled.Construction,   Icons.Outlined.Construction)
@@ -113,7 +135,6 @@ fun WorkoutTrackerApp() {
             snackbarHost   = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 Column {
-                    // Floating Rest Timer Overlay
                     AnimatedVisibility(
                         visible = activeTimer != null,
                         enter = slideInVertically(initialOffsetY = { it }),
