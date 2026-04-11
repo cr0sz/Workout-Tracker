@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ToolsScreen(
     viewModel: WorkoutViewModel,
+    onNavigatePrograms: () -> Unit,
     onNavigatePlateCalc: () -> Unit,
     onNavigateBodyweight: () -> Unit,
     onNavigateTemplates: () -> Unit,
@@ -75,6 +76,13 @@ fun ToolsScreen(
 
         // ── Workouts ──────────────────────────────────────────────────────────
         item { SectionLabel("Workouts") }
+
+        item {
+            ToolCard(icon = Icons.Default.CalendarViewWeek, iconColor = Color(0xFF9C27B0),
+                title = stringResource(R.string.programs_title),
+                subtitle = "Pre-built programs and your custom training plans",
+                onClick = onNavigatePrograms)
+        }
 
         item {
             ToolCard(icon = Icons.Default.BookmarkBorder, iconColor = MaterialTheme.colorScheme.primary,
@@ -135,7 +143,8 @@ fun ToolsScreen(
                                 exporting = false
                                 return@launch
                             }
-                            val file = java.io.File(context.cacheDir, "workout_export.csv")
+                            val exportsDir = java.io.File(context.cacheDir, "exports").also { it.mkdirs() }
+                            val file = java.io.File(exportsDir, "workout_export.csv")
                             file.writeText(csv)
                             val uri  = androidx.core.content.FileProvider.getUriForFile(
                                 context, "${context.packageName}.fileprovider", file)

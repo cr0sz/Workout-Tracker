@@ -8,6 +8,7 @@
     <string name="nav_programs">Programlar</string>
     <string name="nav_stats">İstatistik</string>
     <string name="nav_tools">Araçlar</string>
+    <string name="nav_coach">Koç</string>
 
     <!-- Calendar Screen -->
     <string name="calendar_title">Workout Tracker</string>
@@ -161,6 +162,25 @@
     <string name="next">İleri</string>
     <string name="skip">Atla</string>
     <string name="lets_go">Hadi Başlayalım! 🚀</string>
+
+    <!-- AI Koç -->
+    <string name="ai_coach_title">AI Koç</string>
+    <string name="ai_coach_coaching">%1$s için koçluk</string>
+    <string name="ai_coach_subtitle">Bilime dayalı koçluk</string>
+    <string name="ai_coach_ask_placeholder">Koçuna her şeyi sor…</string>
+    <string name="ai_coach_clear_title">Sohbet Temizlensin mi?</string>
+    <string name="ai_coach_clear_desc">Sohbet geçmişi silinecek. Antrenman veriniz ve profiliniz etkilenmeyecek.</string>
+    <string name="ai_coach_clear_confirm">Temizle</string>
+    <string name="ai_coach_empty_title">AI Koçun</string>
+    <string name="ai_coach_empty_desc">Egzersiz bilimine dayanır. Kaldırmalarını, rekolarını ve hedeflerini bilir.</string>
+    <string name="ai_coach_setup_profile_title">Profilini oluştur</string>
+    <string name="ai_coach_setup_profile_desc">Koçuna hedeflerini, deneyimini ve sakatlıklarını anlat</string>
+    <string name="ai_coach_setup_button">Oluştur</string>
+    <string name="ai_coach_try_asking">Sormayı dene:</string>
+    <string name="ai_coach_suggestion_1">Ana kaldırmalarda ilerleme kaydediyor muyum?</string>
+    <string name="ai_coach_suggestion_2">Bu haftaki antrenmanımı değerlendir</string>
+    <string name="ai_coach_suggestion_3">İtme günümü nasıl ayarlamalıyım?</string>
+    <string name="ai_coach_suggestion_4">Bench press neden durdu?</string>
 
     <!-- General -->
     <string name="loading">Yükleniyor…</string>

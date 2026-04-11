@@ -84,10 +84,9 @@ fun HistoryScreen(viewModel: WorkoutViewModel) {
             }
         }
 
-        if (selectedTab == 0) {
-            WorkoutHistoryList(viewModel)
-        } else {
-            StatsContent(viewModel)
+        when (selectedTab) {
+            0 -> WorkoutHistoryList(viewModel)
+            1 -> StatsContent(viewModel)
         }
     }
 }

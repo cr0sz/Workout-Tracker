@@ -32,7 +32,8 @@ class WorkoutRepository(private val dao: WorkoutDao) {
     suspend fun getBestLastSet(name: String, before: String) = dao.getBestLastSet(name, before)
 
     // Exercise history
-    fun getExerciseHistory(name: String) = dao.getExerciseHistory(name)
+    fun getExerciseHistory(name: String)    = dao.getExerciseHistory(name)
+    fun getExerciseSetHistory(name: String) = dao.getExerciseSetHistory(name)
     fun getAllUsedExerciseNames() = dao.getAllUsedExerciseNames()
 
     // Cardio
@@ -92,6 +93,7 @@ class WorkoutRepository(private val dao: WorkoutDao) {
     fun getTotalVolumeLifted() = dao.getTotalVolumeLifted()
     fun getTotalSets() = dao.getTotalSets()
     fun getPersonalRecords() = dao.getPersonalRecords()
+    suspend fun getPersonalRecordsSync() = dao.getPersonalRecordsSync()
     fun getWorkoutsCountInRange(s: String, e: String) = dao.getWorkoutsCountInRange(s, e)
     fun getVolumeInRange(s: String, e: String) = dao.getVolumeInRange(s, e)
     fun getSetsCountInRange(s: String, e: String) = dao.getSetsCountInRange(s, e)

@@ -4,13 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,7 +37,7 @@ fun CalendarScreen(
 ) {
     val workoutDates by viewModel.allWorkoutDates.collectAsState()
     val cardioDates  by viewModel.allCardioDates.collectAsState()
-    val allWorkouts  by viewModel.allWorkouts.collectAsState()
+    // allWorkouts removed — recent workout list moved to History screen
     val today        = remember { LocalDate.now() }
 
     // derivedStateOf means these only recalculate when workoutDates/cardioDates actually change
@@ -197,110 +195,6 @@ fun CalendarScreen(
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        // ── Recent workouts ──────────────────────────────────────────────────
-        item {
-            Text(
-                stringResource(R.string.recent_workouts),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        if (allWorkouts.isEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(32.dp).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Default.FitnessCenter,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            stringResource(R.string.no_workouts_yet),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            stringResource(R.string.tap_to_log),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        } else {
-            items(allWorkouts.take(7)) { workout ->
-                val localDate = remember(workout.date) {
-                    runCatching { LocalDate.parse(workout.date) }.getOrNull()
-                }
-                val displayDate = localDate?.let {
-                    "${it.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())}, " +
-                    "${it.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${it.dayOfMonth}"
-                } ?: workout.date
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onDayClick(workout.date) },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                localDate?.dayOfMonth?.toString() ?: "-",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                        Spacer(Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                displayDate,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            if (workout.notes.isNotBlank()) {
-                                Text(
-                                    workout.notes,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }

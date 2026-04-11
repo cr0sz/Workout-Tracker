@@ -8,6 +8,7 @@
     <string name="nav_programs">Programmes</string>
     <string name="nav_stats">Stats</string>
     <string name="nav_tools">Outils</string>
+    <string name="nav_coach">Coach</string>
 
     <!-- Calendar -->
     <string name="calendar_title">Workout Tracker</string>
@@ -136,6 +137,25 @@
     <string name="lets_go">C\'est parti ! 🚀</string>
 
     <!-- General -->
+    <!-- Coach IA -->
+    <string name="ai_coach_title">Coach IA</string>
+    <string name="ai_coach_coaching">Coaching de %1$s</string>
+    <string name="ai_coach_subtitle">Coaching basé sur la science</string>
+    <string name="ai_coach_ask_placeholder">Pose n\'importe quelle question à ton coach…</string>
+    <string name="ai_coach_clear_title">Effacer la conversation ?</string>
+    <string name="ai_coach_clear_desc">L\'historique du chat sera supprimé. Vos données d\'entraînement et votre profil ne seront pas affectés.</string>
+    <string name="ai_coach_clear_confirm">Effacer</string>
+    <string name="ai_coach_empty_title">Ton Coach IA</string>
+    <string name="ai_coach_empty_desc">Basé sur la science de l\'exercice. Connaît tes soulevés, tes records et tes objectifs.</string>
+    <string name="ai_coach_setup_profile_title">Configurer ton profil</string>
+    <string name="ai_coach_setup_profile_desc">Dis au coach tes objectifs, ton expérience et tes blessures</string>
+    <string name="ai_coach_setup_button">Configurer</string>
+    <string name="ai_coach_try_asking">Essaie de demander :</string>
+    <string name="ai_coach_suggestion_1">Est-ce que je progresse sur mes exercices principaux ?</string>
+    <string name="ai_coach_suggestion_2">Évalue mon entraînement cette semaine</string>
+    <string name="ai_coach_suggestion_3">Comment organiser ma journée poussée ?</string>
+    <string name="ai_coach_suggestion_4">Pourquoi mon développé couché stagne ?</string>
+
     <string name="loading">Chargement…</string>
     <string name="error_try_again">Un problème est survenu. Veuillez réessayer.</string>
     <string name="add">Ajouter</string>

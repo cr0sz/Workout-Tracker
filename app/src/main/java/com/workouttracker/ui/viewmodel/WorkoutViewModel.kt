@@ -52,21 +52,30 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
         prefs.edit().putBoolean("use_lbs", v).apply()
     }
 
-    private val _language = MutableStateFlow(
-        AppCompatDelegate.getApplicationLocales().get(0)?.language 
-        ?: prefs.getString("language", "en") 
-        ?: "en"
-    )
+    private val supportedLanguages = setOf("en", "tr", "de", "es", "fr")
+
+    private val _language = MutableStateFlow(run {
+        // 1. Explicit user choice saved in prefs — always honour it
+        val saved = prefs.getString("language", null)
+        if (saved != null) return@run saved
+
+        // 2. Fresh install — detect from the device locale and persist it
+        val deviceLang = Locale.getDefault().language
+        val detected = if (deviceLang in supportedLanguages) deviceLang else "en"
+        prefs.edit().putString("language", detected).apply()
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(detected))
+        detected
+    })
     val language: StateFlow<String> = _language.asStateFlow()
-    
+
     fun setLanguage(langCode: String) {
         _language.value = langCode
         prefs.edit().putString("language", langCode).apply()
-        
+
         // Apply the locale change through AppCompat
         val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(langCode)
         AppCompatDelegate.setApplicationLocales(appLocale)
-        
+
         // Also update the JVM default locale to ensure immediate consistency in formatting
         Locale.setDefault(Locale(langCode))
     }
@@ -171,7 +180,8 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     fun getSetsForExercise(id: Long)      = repo.getSetsForExercise(id)
     suspend fun getSetsSync(id: Long)     = repo.getSetsForExerciseSync(id)
     fun getCardioForDate(date: String)    = repo.getCardioForDate(date)
-    fun getExerciseHistory(name: String)  = repo.getExerciseHistory(name)
+    fun getExerciseHistory(name: String)    = repo.getExerciseHistory(name)
+    fun getExerciseSetHistory(name: String) = repo.getExerciseSetHistory(name)
     suspend fun getExerciseHistorySync(name: String) =
         safeCall { repo.getAllExercisesSync()
             .filter { it.exerciseName == name }

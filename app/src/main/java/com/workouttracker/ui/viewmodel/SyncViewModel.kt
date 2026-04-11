@@ -49,13 +49,21 @@ class SyncViewModel(application: Application) : AndroidViewModel(application) {
 
     // ── Google Sign-In ────────────────────────────────────────────────────────
 
-    fun getGoogleSignInClient(context: Context) = GoogleSignIn.getClient(
-        context,
-        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
+    fun getGoogleSignInClient(context: Context): com.google.android.gms.auth.api.signin.GoogleSignInClient {
+        val webClientId = context.getString(R.string.default_web_client_id)
+        
+        // Safety check to ensure the ID is not empty or a placeholder
+        if (webClientId.isBlank() || !webClientId.contains(".apps.googleusercontent.com")) {
+            throw IllegalStateException("Invalid Web Client ID: Check your secrets.xml or strings.xml")
+        }
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
             .requestEmail()
             .build()
-    )
+            
+        return GoogleSignIn.getClient(context, gso)
+    }
 
     fun handleGoogleSignInResult(idToken: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
@@ -66,6 +74,41 @@ class SyncViewModel(application: Application) : AndroidViewModel(application) {
                 onSuccess()
             } catch (e: Exception) {
                 onError(e.message ?: "Sign-in failed")
+            }
+        }
+    }
+
+    fun signInWithEmail(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                auth.signInWithEmailAndPassword(email.trim(), password).await()
+                _user.value = auth.currentUser
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Sign-in failed")
+            }
+        }
+    }
+
+    fun createAccountWithEmail(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                auth.createUserWithEmailAndPassword(email.trim(), password).await()
+                _user.value = auth.currentUser
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Account creation failed")
+            }
+        }
+    }
+
+    fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                auth.sendPasswordResetEmail(email.trim()).await()
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Failed to send reset email")
             }
         }
     }

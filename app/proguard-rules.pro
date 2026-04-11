@@ -20,6 +20,12 @@
   @com.google.firebase.database.PropertyName <methods>;
 }
 -keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+
+# Google Play Services & Auth
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+-keep class com.google.android.libraries.identity.googleid.** { *; }
 
 # Kotlin Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
@@ -34,9 +40,14 @@
 }
 -keep class * extends androidx.lifecycle.ViewModel { *; }
 
-# General Proguard setup
--dontwarn net.zetetic.**
+# SQLCipher
+-keep class net.sqlcipher.** { *; }
 -keep class net.zetetic.** { *; }
+-dontwarn net.sqlcipher.**
+-dontwarn net.zetetic.**
+
+# SupportFactory
+-keep class net.sqlcipher.database.SupportFactory { *; }
 
 # Strip Logging (Log.d, Log.v, Log.i) in release builds
 -assumenosideeffects class android.util.Log {

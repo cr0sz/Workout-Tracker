@@ -5,7 +5,6 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
-// Load local.properties to access signing passwords securely
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -26,6 +25,11 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        // AI Coach backend — update these after deploying the Cloudflare Worker
+        buildConfigField "String", "COACH_WORKER_URL",
+            "\"${localProperties.getProperty('COACH_WORKER_URL', 'https://workout-coach.YOUR_SUBDOMAIN.workers.dev')}\""
+        buildConfigField "String", "COACH_APP_SECRET",
+            "\"${localProperties.getProperty('COACH_APP_SECRET', 'CHANGE_THIS')}\""
     }
 
     signingConfigs {
@@ -47,6 +51,10 @@ android {
         debug {
             debuggable true
         }
+    }
+
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 
     compileOptions {
@@ -98,8 +106,6 @@ dependencies {
     implementation 'androidx.room:room-ktx:2.6.1'
     ksp 'androidx.room:room-compiler:2.6.1'
     
-    implementation "net.zetetic:android-database-sqlcipher:4.5.4"
-    implementation "androidx.sqlite:sqlite-ktx:2.4.0"
     implementation "androidx.security:security-crypto:1.1.0-alpha06"
 
     implementation 'com.google.firebase:firebase-auth-ktx:22.3.1'

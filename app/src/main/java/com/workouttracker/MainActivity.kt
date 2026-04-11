@@ -13,10 +13,13 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.outlined.DirectionsRun
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Construction
@@ -34,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,6 +72,8 @@ fun WorkoutTrackerApp() {
 
     // P2-B. POST_NOTIFICATIONS runtime request helper
     val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("wt_prefs", Context.MODE_PRIVATE) }
+    
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -76,16 +82,17 @@ fun WorkoutTrackerApp() {
         }
     }
 
-    // Trigger permission request ONLY when rest timer is first enabled
-    LaunchedEffect(timerEnabled) {
-        if (timerEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    // Trigger permission request ONLY ONCE on first app launch
+    LaunchedEffect(Unit) {
+        val asked = prefs.getBoolean("notification_permission_asked", false)
+        if (!asked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            prefs.edit().putBoolean("notification_permission_asked", true).apply()
         }
     }
 
     WorkoutTrackerTheme(darkTheme = isDarkTheme) {
         // Check if onboarding has been completed
-        val prefs = remember { context.getSharedPreferences("wt_prefs", Context.MODE_PRIVATE) }
         var onboardingDone by remember { mutableStateOf(prefs.getBoolean("onboarding_done", false)) }
 
         if (!onboardingDone) {
@@ -116,15 +123,15 @@ fun WorkoutTrackerApp() {
         val bottomNavItems = listOf(
             BottomNavItem(context.getString(R.string.nav_calendar), Routes.CALENDAR, Icons.Filled.CalendarMonth,  Icons.Outlined.CalendarMonth),
             BottomNavItem(context.getString(R.string.nav_cardio),   Routes.CARDIO,   Icons.AutoMirrored.Filled.DirectionsRun,  Icons.AutoMirrored.Outlined.DirectionsRun),
-            BottomNavItem(context.getString(R.string.nav_programs), Routes.PROGRAMS, Icons.Filled.FitnessCenter,  Icons.Outlined.FitnessCenter),
             BottomNavItem(context.getString(R.string.nav_stats),    Routes.HISTORY,  Icons.Filled.BarChart,       Icons.Outlined.BarChart),
-            BottomNavItem(context.getString(R.string.nav_tools),    Routes.TOOLS,    Icons.Filled.Construction,   Icons.Outlined.Construction)
+            BottomNavItem(context.getString(R.string.nav_tools),    Routes.TOOLS,    Icons.Filled.Construction,   Icons.Outlined.Construction),
+            BottomNavItem(context.getString(R.string.nav_coach),    Routes.AI_COACH, Icons.Filled.AutoAwesome,    Icons.Filled.AutoAwesome)
         )
 
         val detailPrefixes = listOf(
             "workout/", "program/", "custom_program/", "exercise_history/",
             "bodyweight", "plate_calc", "templates", "exercise_history_list",
-            "new_custom_program", "custom_programs", "account"
+            "new_custom_program", "account", "user_profile"
         )
         val showBottomBar = currentRoute != null &&
                 detailPrefixes.none { currentRoute.startsWith(it) }
@@ -190,7 +197,16 @@ fun WorkoutTrackerApp() {
                                         }
                                     },
                                     icon  = { Icon(if (selected) item.selectedIcon else item.unselectedIcon, item.label) },
-                                    label = { Text(item.label, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal) },
+                                    label = {
+                                        Text(
+                                            item.label,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    },
+                                    alwaysShowLabel = false,
                                     colors = NavigationBarItemDefaults.colors(
                                         selectedIconColor   = MaterialTheme.colorScheme.primary,
                                         selectedTextColor   = MaterialTheme.colorScheme.primary,
@@ -211,7 +227,10 @@ fun WorkoutTrackerApp() {
                 onToggleTheme = { appViewModel.toggleTheme() },
                 useLbs        = useLbs,
                 onToggleUnit  = { appViewModel.toggleUnit() },
-                modifier      = Modifier.padding(innerPadding)
+                modifier      = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+                    .imePadding()
             )
         }
     }

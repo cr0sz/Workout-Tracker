@@ -3,6 +3,8 @@ package com.workouttracker.ui.screens
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,10 +34,67 @@ import com.workouttracker.ui.viewmodel.WorkoutViewModel
 @Composable
 fun ProgramsScreen(
     viewModel: WorkoutViewModel,
+    onProgramClick: (String) -> Unit,
+    onCustomProgramClick: (Long) -> Unit,
+    onCreateCustom: () -> Unit
+) {
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val allProgress by viewModel.allProgramProgress.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Header
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
+            Text(
+                stringResource(R.string.programs_title),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                stringResource(R.string.choose_program),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Tabs
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor   = MaterialTheme.colorScheme.surface,
+            contentColor     = MaterialTheme.colorScheme.primary
+        ) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick  = { selectedTab = 0 },
+                text     = { Text("Library", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal) }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick  = { selectedTab = 1 },
+                text     = { Text("My Programs", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal) }
+            )
+        }
+
+        when (selectedTab) {
+            0 -> ProgramLibraryTab(allProgress = allProgress, onProgramClick = onProgramClick)
+            1 -> MyProgramsTab(viewModel = viewModel, allProgress = allProgress,
+                    onOpenProgram = onCustomProgramClick, onCreateNew = onCreateCustom)
+        }
+    }
+}
+
+// ── Library tab ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun ProgramLibraryTab(
+    allProgress: List<com.workouttracker.data.model.ProgramProgress>,
     onProgramClick: (String) -> Unit
 ) {
     var selectedCategory by remember { mutableStateOf<ProgramCategory?>(null) }
-    val allProgress by viewModel.allProgramProgress.collectAsStateWithLifecycle(initialValue = emptyList())
 
     val filtered = remember(selectedCategory) {
         if (selectedCategory == null) ALL_PROGRAMS
@@ -43,62 +102,33 @@ fun ProgramsScreen(
     }
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        // Header
-        item {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
-                Text(
-                    stringResource(R.string.programs_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    stringResource(R.string.choose_program),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
         // Category filter chips
         item {
+            Spacer(Modifier.height(12.dp))
             Row(
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // "All" chip
-                FilterChipItem(
-                    label    = stringResource(R.string.overview),
-                    emoji    = "🏆",
-                    selected = selectedCategory == null,
-                    onClick  = { selectedCategory = null }
-                )
+                FilterChipItem(label = stringResource(R.string.overview), emoji = "🏆",
+                    selected = selectedCategory == null, onClick = { selectedCategory = null })
                 ProgramCategory.entries.forEach { cat ->
-                    FilterChipItem(
-                        label    = cat.label,
-                        emoji    = cat.emoji,
+                    FilterChipItem(label = cat.label, emoji = cat.emoji,
                         selected = selectedCategory == cat,
-                        onClick  = { selectedCategory = if (selectedCategory == cat) null else cat }
-                    )
+                        onClick = { selectedCategory = if (selectedCategory == cat) null else cat })
                 }
             }
             Spacer(Modifier.height(16.dp))
         }
 
-        // Program cards grouped by category (when no filter selected)
         if (selectedCategory == null) {
             ProgramCategory.entries.forEach { cat ->
                 val progs = ALL_PROGRAMS.filter { it.category == cat }
-                item(key = "header_${cat.name}") {
-                    CategoryHeader(cat)
-                }
+                item(key = "header_${cat.name}") { CategoryHeader(cat) }
                 items(progs, key = { it.id }) { program ->
                     ProgramCard(
                         program  = program,
@@ -121,6 +151,56 @@ fun ProgramsScreen(
                 Spacer(Modifier.height(10.dp))
             }
         }
+    }
+}
+
+// ── My Programs tab ───────────────────────────────────────────────────────────
+
+@Composable
+private fun MyProgramsTab(
+    viewModel: WorkoutViewModel,
+    allProgress: List<com.workouttracker.data.model.ProgramProgress>,
+    onOpenProgram: (Long) -> Unit,
+    onCreateNew: () -> Unit
+) {
+    val programs by viewModel.allCustomPrograms.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (programs.isEmpty()) {
+                item {
+                    Spacer(Modifier.height(24.dp))
+                    com.workouttracker.ui.components.EmptyPlaceholder(
+                        icon = Icons.Default.Build,
+                        text = "Tap + to build your first custom program"
+                    )
+                }
+            } else {
+                items(programs, key = { it.id }) { program ->
+                    val prog = allProgress.find { it.programId == "custom_${program.id}" }
+                    CustomProgramCard(
+                        program  = program,
+                        isActive = prog != null,
+                        onOpen   = { onOpenProgram(program.id) },
+                        onDelete = { viewModel.deleteCustomProgram(program) }
+                    )
+                }
+            }
+        }
+
+        // FAB to create new
+        FloatingActionButton(
+            onClick         = onCreateNew,
+            modifier        = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor  = MaterialTheme.colorScheme.primary,
+            contentColor    = Color.White
+        ) { Icon(Icons.Default.Add, contentDescription = "Create program") }
     }
 }
 

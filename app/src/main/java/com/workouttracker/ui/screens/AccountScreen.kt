@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,10 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,11 +42,20 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
     var showRestoreDialog by remember { mutableStateOf(false) }
     var signInError by remember { mutableStateOf<String?>(null) }
 
+    // 0 = Google, 1 = Email
+    var selectedSignInTab by remember { mutableIntStateOf(1) }
+
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var isCreatingAccount by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(user) {
         if (user != null) syncViewModel.fetchLastSyncTime()
     }
 
-    // Google Sign-In launcher
     val signInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -51,14 +63,26 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                val idToken = account?.idToken ?: return@rememberLauncherForActivityResult
+                val idToken = account?.idToken
+                if (idToken == null) {
+                    signInError = "Google did not return an ID token. Check your Firebase Web Client ID."
+                    return@rememberLauncherForActivityResult
+                }
                 syncViewModel.handleGoogleSignInResult(
                     idToken  = idToken,
                     onSuccess = { signInError = null },
                     onError   = { signInError = it }
                 )
             } catch (e: ApiException) {
-                signInError = "Sign-in cancelled or failed (${e.statusCode})"
+                signInError = "Google Sign-In failed (code ${e.statusCode}). " +
+                    "Make sure your debug SHA-1 is added to Firebase console."
+            } catch (e: Exception) {
+                signInError = "Unexpected error: ${e.localizedMessage}"
+            }
+        } else {
+            // Only show error for non-cancel result codes (0 = user cancelled, which is fine)
+            if (result.resultCode != 0) {
+                signInError = "Sign-in returned unexpected result code: ${result.resultCode}"
             }
         }
     }
@@ -80,7 +104,6 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
-        // ── Signed out state ──────────────────────────────────────────────────
         if (user == null) {
             item {
                 Card(
@@ -93,72 +116,211 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(72.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Default.CloudOff, null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(40.dp))
+                                modifier = Modifier.size(36.dp))
                         }
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(14.dp))
                         Text(stringResource(R.string.no_account_needed),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface)
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(4.dp))
                         Text(stringResource(R.string.no_account_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center)
                         Spacer(Modifier.height(20.dp))
 
+                        // Sign-in method tabs
+                        TabRow(
+                            selectedTabIndex = selectedSignInTab,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Tab(
+                                selected = selectedSignInTab == 0,
+                                onClick = { selectedSignInTab = 0; signInError = null },
+                                text = { Text("Google", fontWeight = FontWeight.SemiBold) }
+                            )
+                            Tab(
+                                selected = selectedSignInTab == 1,
+                                onClick = { selectedSignInTab = 1; signInError = null },
+                                text = { Text("Email", fontWeight = FontWeight.SemiBold) }
+                            )
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // Error card
                         if (signInError != null) {
                             Card(
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)),
+                                    containerColor = MaterialTheme.colorScheme.errorContainer),
                                 shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
                             ) {
-                                Text(signInError!!,
-                                    modifier = Modifier.padding(10.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error)
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(Icons.Default.ErrorOutline, null,
+                                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.size(18.dp).padding(top = 2.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(signInError!!,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer)
+                                }
                             }
-                            Spacer(Modifier.height(12.dp))
                         }
 
-                        Button(
-                            onClick = {
-                                val client = syncViewModel.getGoogleSignInClient(context)
-                                signInLauncher.launch(client.signInIntent)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
-                        ) {
-                            Icon(Icons.Default.AccountCircle, null,
-                                modifier = Modifier.size(20.dp), tint = Color.White)
-                            Spacer(Modifier.width(10.dp))
-                            Text(stringResource(R.string.sign_in_google),
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp)
+                        // Google sign-in
+                        if (selectedSignInTab == 0) {
+                            Button(
+                                onClick = {
+                                    signInError = null
+                                    try {
+                                        val client = syncViewModel.getGoogleSignInClient(context)
+                                        signInLauncher.launch(client.signInIntent)
+                                    } catch (e: Exception) {
+                                        signInError = "Launch error: ${e.message}"
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
+                            ) {
+                                Icon(Icons.Default.AccountCircle, null,
+                                    modifier = Modifier.size(20.dp), tint = Color.White)
+                                Spacer(Modifier.width(10.dp))
+                                Text(stringResource(R.string.sign_in_google),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp)
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "If Google sign-in fails, use the Email tab instead",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        // Email/password sign-in
+                        if (selectedSignInTab == 1) {
+                            OutlinedTextField(
+                                value = email,
+                                onValueChange = { email = it },
+                                label = { Text("Email") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                leadingIcon = { Icon(Icons.Default.Email, null) }
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("Password") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                visualTransformation = if (passwordVisible) VisualTransformation.None
+                                                       else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                leadingIcon = { Icon(Icons.Default.Lock, null) },
+                                trailingIcon = {
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(
+                                            if (passwordVisible) Icons.Default.VisibilityOff
+                                            else Icons.Default.Visibility, null
+                                        )
+                                    }
+                                }
+                            )
+                            Spacer(Modifier.height(14.dp))
+
+                            Button(
+                                onClick = {
+                                    signInError = null
+                                    if (email.isBlank() || password.isBlank()) {
+                                        signInError = "Please enter your email and password"
+                                        return@Button
+                                    }
+                                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
+                                        signInError = "Please enter a valid email address"
+                                        return@Button
+                                    }
+                                    if (isCreatingAccount && password.length < 6) {
+                                        signInError = "Password must be at least 6 characters"
+                                        return@Button
+                                    }
+                                    isLoading = true
+                                    if (isCreatingAccount) {
+                                        syncViewModel.createAccountWithEmail(email, password,
+                                            onSuccess = { isLoading = false; signInError = null },
+                                            onError   = { isLoading = false; signInError = it })
+                                    } else {
+                                        syncViewModel.signInWithEmail(email, password,
+                                            onSuccess = { isLoading = false; signInError = null },
+                                            onError   = { isLoading = false; signInError = it })
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                enabled = !isLoading
+                            ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    Text(
+                                        if (isCreatingAccount) "Create Account" else "Sign In",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            TextButton(onClick = {
+                                isCreatingAccount = !isCreatingAccount
+                                signInError = null
+                            }) {
+                                Text(
+                                    if (isCreatingAccount) "Already have an account? Sign in"
+                                    else "No account yet? Create one",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            if (!isCreatingAccount) {
+                                TextButton(onClick = { showForgotPasswordDialog = true }) {
+                                    Text(
+                                        "Forgot password?",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
-
-            // Security explainer
             item { SecurityInfoCard() }
-        }
-
-        // ── Signed in state ───────────────────────────────────────────────────
-        else {
+        } else {
             val currentUser = user!!
-
-            // Profile card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -177,7 +339,8 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                currentUser.displayName?.firstOrNull()?.uppercase() ?: "?",
+                                currentUser.displayName?.firstOrNull()?.uppercase()
+                                    ?: currentUser.email?.firstOrNull()?.uppercase() ?: "?",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.ExtraBold
@@ -185,13 +348,15 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(currentUser.displayName ?: "User",
+                            Text(currentUser.displayName ?: currentUser.email ?: "User",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface)
-                            Text(currentUser.email ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (currentUser.displayName != null) {
+                                Text(currentUser.email ?: "",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                         Box(
                             modifier = Modifier
@@ -208,7 +373,6 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                 }
             }
 
-            // Last sync status
             item {
                 val lastSyncStr = syncStatus.lastSyncTime?.let { formatSyncTime(it) }
                 Card(
@@ -259,7 +423,6 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                 }
             }
 
-            // Action buttons
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
@@ -286,10 +449,8 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
                 }
             }
 
-            // Security info
             item { SecurityInfoCard() }
 
-            // Sign out — small and at the bottom
             item {
                 Spacer(Modifier.height(8.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
@@ -310,15 +471,22 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
         }
     }
 
-    // ── Restore confirmation ──────────────────────────────────────────────────
+    if (showForgotPasswordDialog) {
+        ForgotPasswordDialog(
+            prefillEmail = email,
+            onDismiss = { showForgotPasswordDialog = false },
+            onSend = { resetEmail, onSuccess, onError ->
+                syncViewModel.sendPasswordResetEmail(resetEmail, onSuccess, onError)
+            }
+        )
+    }
+
     if (showRestoreDialog) {
         AlertDialog(
             onDismissRequest = { showRestoreDialog = false },
             icon  = { Icon(Icons.Default.CloudDownload, null, tint = MaterialTheme.colorScheme.primary) },
             title = { Text(stringResource(R.string.restore_confirm_title), fontWeight = FontWeight.Bold) },
-            text  = {
-                Text(stringResource(R.string.restore_confirm_desc))
-            },
+            text  = { Text(stringResource(R.string.restore_confirm_desc)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -337,7 +505,108 @@ fun AccountScreen(syncViewModel: SyncViewModel) {
     }
 }
 
-// ── Security info card ────────────────────────────────────────────────────────
+@Composable
+fun ForgotPasswordDialog(
+    prefillEmail: String,
+    onDismiss: () -> Unit,
+    onSend: (String, () -> Unit, (String) -> Unit) -> Unit
+) {
+    var resetEmail by remember { mutableStateOf(prefillEmail) }
+    var isSending by remember { mutableStateOf(false) }
+    var result by remember { mutableStateOf<Pair<Boolean, String>?>(null) } // true=success
+
+    AlertDialog(
+        onDismissRequest = { if (!isSending) onDismiss() },
+        icon = { Icon(Icons.Default.Email, null, tint = MaterialTheme.colorScheme.primary) },
+        title = { Text("Reset Password", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Enter your email address and we'll send you a link to reset your password.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = resetEmail,
+                    onValueChange = { resetEmail = it; result = null },
+                    label = { Text("Email") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    leadingIcon = { Icon(Icons.Default.Email, null) },
+                    enabled = !isSending
+                )
+                result?.let { (success, msg) ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (success)
+                                Color(0xFF4CAF50).copy(alpha = 0.12f)
+                            else
+                                MaterialTheme.colorScheme.errorContainer
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.Top) {
+                            Icon(
+                                if (success) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                                null,
+                                tint = if (success) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(16.dp).padding(top = 1.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                msg,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (success) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (resetEmail.isBlank()) return@Button
+                    isSending = true
+                    result = null
+                    onSend(
+                        resetEmail,
+                        {
+                            isSending = false
+                            result = true to "Reset link sent! Check your inbox."
+                        },
+                        { err ->
+                            isSending = false
+                            result = false to err
+                        }
+                    )
+                },
+                shape = RoundedCornerShape(10.dp),
+                enabled = !isSending && resetEmail.isNotBlank()
+            ) {
+                if (isSending) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Send Reset Link")
+                }
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(10.dp),
+                enabled = !isSending
+            ) { Text("Cancel") }
+        },
+        shape = RoundedCornerShape(20.dp)
+    )
+}
 
 @Composable
 fun SecurityInfoCard() {

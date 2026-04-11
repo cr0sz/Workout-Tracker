@@ -8,6 +8,7 @@
     <string name="nav_programs">Programs</string>
     <string name="nav_stats">Stats</string>
     <string name="nav_tools">Tools</string>
+    <string name="nav_coach">Coach</string>
 
     <!-- Calendar Screen -->
     <string name="calendar_title">Workout Tracker</string>
@@ -136,6 +137,25 @@
     <string name="lets_go">Let\'s Go! 🚀</string>
 
     <!-- General -->
+    <!-- AI Coach -->
+    <string name="ai_coach_title">AI Coach</string>
+    <string name="ai_coach_coaching">Coaching %1$s</string>
+    <string name="ai_coach_subtitle">Science-backed coaching</string>
+    <string name="ai_coach_ask_placeholder">Ask your coach anything…</string>
+    <string name="ai_coach_clear_title">Clear Conversation?</string>
+    <string name="ai_coach_clear_desc">The chat history will be deleted. Your workout data and profile are unaffected.</string>
+    <string name="ai_coach_clear_confirm">Clear</string>
+    <string name="ai_coach_empty_title">Your AI Coach</string>
+    <string name="ai_coach_empty_desc">Trained on exercise science. Knows your lifts, your PRs, and your goals.</string>
+    <string name="ai_coach_setup_profile_title">Set up your profile</string>
+    <string name="ai_coach_setup_profile_desc">Tell the coach your goals, experience, and injuries</string>
+    <string name="ai_coach_setup_button">Set up</string>
+    <string name="ai_coach_try_asking">Try asking:</string>
+    <string name="ai_coach_suggestion_1">Am I making progress on my main lifts?</string>
+    <string name="ai_coach_suggestion_2">Review my training this week</string>
+    <string name="ai_coach_suggestion_3">How should I set up my push day?</string>
+    <string name="ai_coach_suggestion_4">Why is my bench press stuck?</string>
+
     <string name="loading">Loading…</string>
     <string name="error_try_again">Something went wrong. Please try again.</string>
     <string name="add">Add</string>

@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.workouttracker.ui.screens.*
+import com.workouttracker.ui.viewmodel.AiCoachViewModel
 import com.workouttracker.ui.viewmodel.SyncViewModel
 import com.workouttracker.ui.viewmodel.WorkoutViewModel
 
@@ -25,6 +26,8 @@ object Routes {
     const val PLATE_CALC            = "plate_calc"
     const val TEMPLATES             = "templates"
     const val EXERCISE_HISTORY_LIST = "exercise_history_list"
+    const val AI_COACH              = "ai_coach"
+    const val USER_PROFILE          = "user_profile"
     const val WORKOUT               = "workout/{date}"
     const val PROGRAM_DETAIL        = "program/{programId}"
     const val CUSTOM_PROGRAM_DETAIL = "custom_program/{programId}"
@@ -46,6 +49,7 @@ fun AppNavigation(
 ) {
     val viewModel: WorkoutViewModel = viewModel()
     val syncViewModel: SyncViewModel = viewModel()
+    val aiCoachViewModel: AiCoachViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = Routes.CALENDAR, modifier = modifier) {
 
@@ -65,8 +69,12 @@ fun AppNavigation(
         composable(Routes.CARDIO) { CardioScreen(viewModel = viewModel) }
 
         composable(Routes.PROGRAMS) {
-            ProgramsScreen(viewModel = viewModel,
-                onProgramClick = { navController.navigate(Routes.programDetail(it)) })
+            ProgramsScreen(
+                viewModel            = viewModel,
+                onProgramClick       = { navController.navigate(Routes.programDetail(it)) },
+                onCustomProgramClick = { navController.navigate(Routes.customProgramDetail(it)) },
+                onCreateCustom       = { navController.navigate(Routes.NEW_CUSTOM_PROGRAM) }
+            )
         }
 
         composable(Routes.PROGRAM_DETAIL,
@@ -82,18 +90,12 @@ fun AppNavigation(
                 })
         }
 
-        composable(Routes.CUSTOM_PROGRAMS) {
-            CustomProgramsScreen(viewModel = viewModel,
-                onCreateNew    = { navController.navigate(Routes.NEW_CUSTOM_PROGRAM) },
-                onOpenProgram  = { navController.navigate(Routes.customProgramDetail(it)) })
-        }
-
         composable(Routes.NEW_CUSTOM_PROGRAM) {
             NewCustomProgramScreen(viewModel = viewModel,
                 onBack    = { navController.popBackStack() },
                 onCreated = { id ->
                     navController.navigate(Routes.customProgramDetail(id)) {
-                        popUpTo(Routes.CUSTOM_PROGRAMS) { inclusive = false }
+                        popUpTo(Routes.PROGRAMS) { inclusive = false }
                     }
                 })
         }
@@ -106,15 +108,18 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() },
                 onLoadedToWorkout = { date ->
                     navController.navigate(Routes.workout(date)) {
-                        popUpTo(Routes.CUSTOM_PROGRAMS) { inclusive = false }
+                        popUpTo(Routes.PROGRAMS) { inclusive = false }
                     }
                 })
         }
 
-        composable(Routes.HISTORY) { HistoryScreen(viewModel = viewModel) }
+        composable(Routes.HISTORY) {
+            HistoryScreen(viewModel = viewModel)
+        }
 
         composable(Routes.TOOLS) {
             ToolsScreen(viewModel = viewModel,
+                onNavigatePrograms        = { navController.navigate(Routes.PROGRAMS) },
                 onNavigatePlateCalc       = { navController.navigate(Routes.PLATE_CALC) },
                 onNavigateBodyweight      = { navController.navigate(Routes.BODYWEIGHT) },
                 onNavigateTemplates       = { navController.navigate(Routes.TEMPLATES) },
@@ -132,6 +137,20 @@ fun AppNavigation(
         composable(Routes.EXERCISE_HISTORY_LIST) {
             ExerciseHistoryListScreen(viewModel = viewModel,
                 onSelectExercise = { navController.navigate(Routes.exerciseHistory(it)) })
+        }
+
+        composable(Routes.AI_COACH) {
+            AiCoachScreen(
+                viewModel = aiCoachViewModel,
+                onNavigateProfile = { navController.navigate(Routes.USER_PROFILE) }
+            )
+        }
+
+        composable(Routes.USER_PROFILE) {
+            UserProfileSetupScreen(
+                viewModel = aiCoachViewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.EXERCISE_HISTORY,

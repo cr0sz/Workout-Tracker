@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(find /c/Users/bekir/Documents/projeler/WorkoutTracker/app/src/main/res/values-* -name \"strings.xml\")",
+      "Bash(xargs -I {} bash -c 'echo \"File: {}\"; head -20 \"{}\"')",
+      "Bash(grep -v \"\\\\.kt:#\\\\|//.*//\")"
+    ]
+  }
+}

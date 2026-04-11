@@ -179,12 +179,21 @@ fun CardioSessionCard(session: CardioSession, onDelete: () -> Unit) {
                 )
 
                 // Stat chips row
+                val pace = if (session.distanceKm != null && session.durationMinutes != null &&
+                               session.distanceKm > 0f) {
+                    val minPerKm = session.durationMinutes / session.distanceKm
+                    val mins = minPerKm.toInt()
+                    val secs = ((minPerKm - mins) * 60).toInt()
+                    "%d:%02d /km".format(mins, secs)
+                } else null
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 4.dp)
                 ) {
                     session.distanceKm?.let { StatChip("${it} km") }
                     session.durationMinutes?.let { StatChip("${it} min") }
+                    pace?.let { StatChip(it) }
                     session.weightKg?.let { StatChip("${it} kg") }
                     session.calories?.let { StatChip("${it} kcal") }
                 }
@@ -351,6 +360,39 @@ fun AddCardioDialog(
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp)
                     )
+                }
+
+                // Live pace preview
+                val livePace = run {
+                    val d = distance.toFloatOrNull()
+                    val t = duration.toIntOrNull()
+                    if (d != null && t != null && d > 0f) {
+                        val minPerKm = t / d
+                        val mins = minPerKm.toInt()
+                        val secs = ((minPerKm - mins) * 60).toInt()
+                        "%d:%02d min/km".format(mins, secs)
+                    } else null
+                }
+                if (livePace != null) {
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Speed,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                "Pace: $livePace",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
 
                 // Notes

@@ -56,6 +56,12 @@ interface WorkoutDao {
         GROUP BY we.workoutDate ORDER BY we.workoutDate ASC""")
     fun getExerciseHistory(exerciseName: String): Flow<List<ExerciseHistoryEntry>>
 
+    @Query("""SELECT we.workoutDate, es.setNumber, es.reps, es.weight
+        FROM exercise_sets es JOIN workout_exercises we ON es.exerciseId=we.id
+        WHERE we.exerciseName=:exerciseName AND es.isBodyweight=0
+        ORDER BY we.workoutDate ASC, es.setNumber ASC""")
+    fun getExerciseSetHistory(exerciseName: String): Flow<List<ExerciseSetEntry>>
+
     @Query("""SELECT DISTINCT we.exerciseName FROM workout_exercises we ORDER BY we.exerciseName ASC""")
     fun getAllUsedExerciseNames(): Flow<List<String>>
 
@@ -136,6 +142,15 @@ interface WorkoutDao {
         ORDER BY es.weight DESC, we.workoutDate DESC
     ) GROUP BY exerciseName ORDER BY maxWeight DESC""")
     fun getPersonalRecords(): Flow<List<PersonalRecord>>
+
+    @Query("""SELECT exerciseName, weight as maxWeight, workoutDate as date FROM (
+        SELECT we.exerciseName, es.weight, we.workoutDate
+        FROM exercise_sets es
+        JOIN workout_exercises we ON es.exerciseId=we.id
+        WHERE es.isBodyweight=0 AND es.weight>0
+        ORDER BY es.weight DESC, we.workoutDate DESC
+    ) GROUP BY exerciseName ORDER BY maxWeight DESC""")
+    suspend fun getPersonalRecordsSync(): List<PersonalRecord>
     @Query("SELECT COUNT(*) FROM workouts WHERE date>=:s AND date<=:e") fun getWorkoutsCountInRange(s: String, e: String): Flow<Int>
     @Query("""SELECT COALESCE(SUM(es.weight*es.reps),0) FROM exercise_sets es
         JOIN workout_exercises we ON es.exerciseId=we.id

@@ -108,6 +108,7 @@ data class CustomProgramExercise(
 
 data class LastSetInfo(val weight: Float, val reps: Int, val isBodyweight: Boolean, val workoutDate: String)
 data class ExerciseHistoryEntry(val workoutDate: String, val maxWeight: Float, val totalSets: Int, val totalReps: Int)
+data class ExerciseSetEntry(val workoutDate: String, val setNumber: Int, val reps: Int, val weight: Float)
 
 val CARDIO_TYPES = listOf("Walk","Run","Cycle","Swim","Rowing","Elliptical","Stair Climber","Jump Rope","HIIT","Other")
 

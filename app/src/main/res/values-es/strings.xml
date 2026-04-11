@@ -8,6 +8,7 @@
     <string name="nav_programs">Programas</string>
     <string name="nav_stats">Estadísticas</string>
     <string name="nav_tools">Herramientas</string>
+    <string name="nav_coach">Entrenador</string>
 
     <!-- Calendar -->
     <string name="calendar_title">Workout Tracker</string>
@@ -136,6 +137,25 @@
     <string name="lets_go">¡Vamos! 🚀</string>
 
     <!-- General -->
+    <!-- Entrenador IA -->
+    <string name="ai_coach_title">Entrenador IA</string>
+    <string name="ai_coach_coaching">Entrenando a %1$s</string>
+    <string name="ai_coach_subtitle">Entrenamiento basado en ciencia</string>
+    <string name="ai_coach_ask_placeholder">Pregúntale lo que quieras a tu entrenador…</string>
+    <string name="ai_coach_clear_title">¿Borrar conversación?</string>
+    <string name="ai_coach_clear_desc">El historial del chat se eliminará. Tus datos de entrenamiento y perfil no se verán afectados.</string>
+    <string name="ai_coach_clear_confirm">Borrar</string>
+    <string name="ai_coach_empty_title">Tu Entrenador IA</string>
+    <string name="ai_coach_empty_desc">Basado en ciencia del ejercicio. Conoce tus levantamientos, tus récords y tus metas.</string>
+    <string name="ai_coach_setup_profile_title">Configura tu perfil</string>
+    <string name="ai_coach_setup_profile_desc">Cuéntale al entrenador tus metas, experiencia y lesiones</string>
+    <string name="ai_coach_setup_button">Configurar</string>
+    <string name="ai_coach_try_asking">Prueba preguntando:</string>
+    <string name="ai_coach_suggestion_1">¿Estoy progresando en mis levantamientos principales?</string>
+    <string name="ai_coach_suggestion_2">Revisa mi entrenamiento de esta semana</string>
+    <string name="ai_coach_suggestion_3">¿Cómo debo organizar mi día de empuje?</string>
+    <string name="ai_coach_suggestion_4">¿Por qué mi press de banca no avanza?</string>
+
     <string name="loading">Cargando…</string>
     <string name="error_try_again">Algo salió mal. Por favor, inténtalo de nuevo.</string>
     <string name="add">Añadir</string>

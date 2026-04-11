@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
+    <!--
+        The workout database is encrypted with SQLCipher (AES-256). The encryption
+        key lives in EncryptedSharedPreferences backed by the Android Keystore and
+        is device-specific — it cannot be transferred to another device. Backing up
+        the encrypted DB without its key would be useless, so we exclude both.
+        Users should use the in-app cloud backup (Firebase) to transfer data.
+    -->
     <cloud-backup>
-        <include domain="database" path="workout_database" />
-        <include domain="sharedpref" path="wt_prefs.xml" />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="db_key_store.xml" />
+        <exclude domain="sharedpref" path="ai_coach_secure.xml" />
     </cloud-backup>
     <device-transfer>
-        <include domain="database" path="workout_database" />
-        <include domain="sharedpref" path="wt_prefs.xml" />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="db_key_store.xml" />
+        <exclude domain="sharedpref" path="ai_coach_secure.xml" />
     </device-transfer>
 </data-extraction-rules>

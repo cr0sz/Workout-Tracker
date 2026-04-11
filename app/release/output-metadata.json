@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.workouttracker",
+  "applicationId": "com.workoutttracker",
   "variantName": "release",
   "elements": [
     {

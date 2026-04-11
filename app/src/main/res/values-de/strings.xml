@@ -8,6 +8,7 @@
     <string name="nav_programs">Programme</string>
     <string name="nav_stats">Statistik</string>
     <string name="nav_tools">Werkzeuge</string>
+    <string name="nav_coach">Coach</string>
 
     <!-- Calendar Screen -->
     <string name="calendar_title">Workout Tracker</string>
@@ -136,6 +137,25 @@
     <string name="lets_go">Los geht\'s! 🚀</string>
 
     <!-- General -->
+    <!-- KI-Coach -->
+    <string name="ai_coach_title">KI-Coach</string>
+    <string name="ai_coach_coaching">%1$s trainieren</string>
+    <string name="ai_coach_subtitle">Wissenschaftsbasiertes Coaching</string>
+    <string name="ai_coach_ask_placeholder">Frag deinen Coach alles…</string>
+    <string name="ai_coach_clear_title">Gespräch löschen?</string>
+    <string name="ai_coach_clear_desc">Der Chatverlauf wird gelöscht. Deine Workout-Daten und dein Profil sind nicht betroffen.</string>
+    <string name="ai_coach_clear_confirm">Löschen</string>
+    <string name="ai_coach_empty_title">Dein KI-Coach</string>
+    <string name="ai_coach_empty_desc">Basierend auf Sportwissenschaft. Kennt deine Lifts, PRs und Ziele.</string>
+    <string name="ai_coach_setup_profile_title">Profil einrichten</string>
+    <string name="ai_coach_setup_profile_desc">Erzähl dem Coach deine Ziele, Erfahrung und Verletzungen</string>
+    <string name="ai_coach_setup_button">Einrichten</string>
+    <string name="ai_coach_try_asking">Probier mal:</string>
+    <string name="ai_coach_suggestion_1">Mache ich bei meinen Hauptübungen Fortschritte?</string>
+    <string name="ai_coach_suggestion_2">Bewerte mein Training diese Woche</string>
+    <string name="ai_coach_suggestion_3">Wie sollte ich meinen Push-Tag aufbauen?</string>
+    <string name="ai_coach_suggestion_4">Warum stagniert mein Bankdrücken?</string>
+
     <string name="loading">Wird geladen…</string>
     <string name="error_try_again">Etwas ist schiefgelaufen. Bitte versuche es erneut.</string>
     <string name="add">Hinzufügen</string>
