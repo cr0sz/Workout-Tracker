@@ -26,6 +26,7 @@ import com.workouttracker.R
 import com.workouttracker.ui.viewmodel.WorkoutViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolsScreen(
     viewModel: WorkoutViewModel,
@@ -48,9 +49,13 @@ fun ToolsScreen(
     val currentLanguage by viewModel.language.collectAsStateWithLifecycle()
     val timerEnabled by viewModel.timerEnabled.collectAsStateWithLifecycle()
     val restSeconds by viewModel.defaultRestSeconds.collectAsStateWithLifecycle()
-    
+    val reminderEnabled by viewModel.reminderEnabled.collectAsStateWithLifecycle()
+    val reminderHour by viewModel.reminderHour.collectAsStateWithLifecycle()
+    val reminderMinute by viewModel.reminderMinute.collectAsStateWithLifecycle()
+
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showTimerDialog by remember { mutableStateOf(false) }
+    var showReminderTimePicker by remember { mutableStateOf(false) }
 
     val languages = listOf(
         "en" to "English",
@@ -261,6 +266,42 @@ fun ToolsScreen(
         item {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth().clickable {
+                    if (reminderEnabled) viewModel.setReminder(context, false)
+                    else showReminderTimePicker = true
+                }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF2196F3).copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.NotificationsActive, null, tint = Color(0xFF2196F3),
+                            modifier = Modifier.size(24.dp))
+                    }
+                    Spacer(Modifier.width(14.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Workout Reminder", style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            if (reminderEnabled) "Daily at %02d:%02d".format(reminderHour, reminderMinute)
+                            else "Tap to set a daily reminder",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = reminderEnabled,
+                        onCheckedChange = { on ->
+                            if (on) showReminderTimePicker = true
+                            else viewModel.setReminder(context, false)
+                        },
+                        colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
+        }
+
+        item {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(16.dp)) {
                 Row(modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true }.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
@@ -305,6 +346,32 @@ fun ToolsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
             }
         }
+    }
+
+    if (showReminderTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = reminderHour,
+            initialMinute = reminderMinute,
+            is24Hour = true
+        )
+        AlertDialog(
+            onDismissRequest = { showReminderTimePicker = false },
+            title = { Text("Set Reminder Time") },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    TimePicker(state = timePickerState)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.setReminder(context, true, timePickerState.hour, timePickerState.minute)
+                    showReminderTimePicker = false
+                }) { Text("Set") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReminderTimePicker = false }) { Text("Cancel") }
+            }
+        )
     }
 
     if (showLanguageDialog) {

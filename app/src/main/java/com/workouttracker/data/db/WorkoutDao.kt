@@ -7,6 +7,12 @@ import kotlinx.coroutines.flow.Flow
 data class ExerciseCount(val exerciseName: String, val count: Int)
 data class PersonalRecord(val exerciseName: String, val maxWeight: Float, val date: String)
 data class VolumeEntry(val date: String, val volume: Float)
+data class WorkoutSummary(
+    val date: String,
+    val exerciseCount: Int,
+    val setCount: Int,
+    val totalVolume: Float
+)
 
 @Dao
 interface WorkoutDao {
@@ -40,6 +46,17 @@ interface WorkoutDao {
     @Query("DELETE FROM exercise_sets WHERE exerciseId=:id") suspend fun deleteAllSetsForExercise(id: Long)
     @Query("SELECT * FROM exercise_sets ORDER BY exerciseId ASC, setNumber ASC")
     suspend fun getAllSetsSync(): List<ExerciseSet>
+
+    @Query("SELECT * FROM workout_exercises WHERE id=:id LIMIT 1")
+    suspend fun getExerciseById(id: Long): WorkoutExercise?
+
+    @Query("SELECT * FROM workout_exercises WHERE workoutDate >= :start AND workoutDate <= :end ORDER BY workoutDate ASC, orderIndex ASC")
+    fun getExercisesInRange(start: String, end: String): Flow<List<WorkoutExercise>>
+
+    @Query("""SELECT MAX(es.weight) FROM exercise_sets es
+        JOIN workout_exercises we ON es.exerciseId=we.id
+        WHERE we.exerciseName=:name AND es.isBodyweight=0""")
+    suspend fun getMaxWeightForExercise(name: String): Float?
 
     // Progressive overload
     @Query("""SELECT es.weight,es.reps,es.isBodyweight,we.workoutDate FROM exercise_sets es
@@ -134,22 +151,18 @@ interface WorkoutDao {
     fun getTopExercises(): Flow<List<ExerciseCount>>
     @Query("SELECT SUM(weight*reps) FROM exercise_sets WHERE isBodyweight=0") fun getTotalVolumeLifted(): Flow<Float?>
     @Query("SELECT COUNT(*) FROM exercise_sets") fun getTotalSets(): Flow<Int>
-    @Query("""SELECT exerciseName, weight as maxWeight, workoutDate as date FROM (
-        SELECT we.exerciseName, es.weight, we.workoutDate
+    @Query("""SELECT we.exerciseName as exerciseName, MAX(es.weight) as maxWeight, we.workoutDate as date
         FROM exercise_sets es
         JOIN workout_exercises we ON es.exerciseId=we.id
         WHERE es.isBodyweight=0 AND es.weight>0
-        ORDER BY es.weight DESC, we.workoutDate DESC
-    ) GROUP BY exerciseName ORDER BY maxWeight DESC""")
+        GROUP BY we.exerciseName ORDER BY maxWeight DESC""")
     fun getPersonalRecords(): Flow<List<PersonalRecord>>
 
-    @Query("""SELECT exerciseName, weight as maxWeight, workoutDate as date FROM (
-        SELECT we.exerciseName, es.weight, we.workoutDate
+    @Query("""SELECT we.exerciseName as exerciseName, MAX(es.weight) as maxWeight, we.workoutDate as date
         FROM exercise_sets es
         JOIN workout_exercises we ON es.exerciseId=we.id
         WHERE es.isBodyweight=0 AND es.weight>0
-        ORDER BY es.weight DESC, we.workoutDate DESC
-    ) GROUP BY exerciseName ORDER BY maxWeight DESC""")
+        GROUP BY we.exerciseName ORDER BY maxWeight DESC""")
     suspend fun getPersonalRecordsSync(): List<PersonalRecord>
     @Query("SELECT COUNT(*) FROM workouts WHERE date>=:s AND date<=:e") fun getWorkoutsCountInRange(s: String, e: String): Flow<Int>
     @Query("""SELECT COALESCE(SUM(es.weight*es.reps),0) FROM exercise_sets es
@@ -173,4 +186,14 @@ interface WorkoutDao {
         JOIN workout_exercises we ON es.exerciseId = we.id
         GROUP BY we.exerciseName""")
     fun getAllExerciseSetCounts(): Flow<List<ExerciseCount>>
+
+    @Query("""SELECT we.workoutDate as date,
+        COUNT(DISTINCT we.id) as exerciseCount,
+        COUNT(es.id) as setCount,
+        COALESCE(SUM(CASE WHEN es.isBodyweight=0 THEN es.weight*es.reps ELSE 0 END),0) as totalVolume
+        FROM workout_exercises we
+        LEFT JOIN exercise_sets es ON es.exerciseId=we.id
+        GROUP BY we.workoutDate
+        ORDER BY we.workoutDate DESC""")
+    fun getWorkoutSummaries(): Flow<List<WorkoutSummary>>
 }

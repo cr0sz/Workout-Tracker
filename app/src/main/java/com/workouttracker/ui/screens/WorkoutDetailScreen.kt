@@ -75,6 +75,13 @@ fun WorkoutDetailScreen(
         if (templateSaved) { snackState.showSnackbar(savedAsTemplateMsg); templateSaved = false }
     }
 
+    // Personal record celebration
+    LaunchedEffect(viewModel) {
+        viewModel.newPrExercise.collect { exerciseName ->
+            snackState.showSnackbar("🏆 New PR — $exerciseName!")
+        }
+    }
+
     val parsedDate  = remember(date) { runCatching { LocalDate.parse(date) }.getOrNull() }
     val displayDate = remember(date) {
         parsedDate?.let {
@@ -151,7 +158,7 @@ fun WorkoutDetailScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp)
         ) {
             if (isToday && activeWorkoutStartTime == null) {
-                item {
+                item(key = "start_workout_banner") {
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
@@ -175,7 +182,7 @@ fun WorkoutDetailScreen(
             }
 
             if (exercises.isEmpty()) {
-                item {
+                item(key = "empty_placeholder") {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -203,7 +210,7 @@ fun WorkoutDetailScreen(
                 }
             }
 
-            items(exercises, key = { it.id }) { exercise ->
+            items(exercises, key = { "ex_${it.id}" }) { exercise ->
                 ExerciseCard(
                     exercise = exercise,
                     viewModel = viewModel,
@@ -251,11 +258,15 @@ fun ExerciseCard(
     onDelete: () -> Unit
 ) {
     val sets by viewModel.getSetsForExercise(exercise.id).collectAsStateWithLifecycle(initialValue = emptyList())
-    var showAddSet by remember { mutableStateOf(false) }
     var expanded   by rememberSaveable { mutableStateOf(true) }
     var lastSet    by remember { mutableStateOf<com.workouttracker.data.model.LastSetInfo?>(null) }
     var suggestion by remember { mutableStateOf<com.workouttracker.ui.util.WeightSuggestion?>(null) }
     val useLbs     by viewModel.useLbs.collectAsStateWithLifecycle()
+
+    // Inline form state
+    var inlineReps       by remember { mutableStateOf("") }
+    var inlineWeight     by remember { mutableStateOf("") }
+    var inlineBodyweight by remember { mutableStateOf(false) }
 
     LaunchedEffect(exercise.exerciseName) {
         lastSet    = viewModel.getBestLastSet(exercise.exerciseName, exercise.workoutDate)
@@ -266,6 +277,18 @@ fun ExerciseCard(
             exerciseName = exercise.exerciseName,
             useLbs       = useLbs
         )
+    }
+
+    // Pre-fill form when suggestion loads (only if user hasn't typed yet)
+    LaunchedEffect(suggestion) {
+        if (suggestion != null && inlineReps.isEmpty() && inlineWeight.isEmpty()) {
+            inlineReps = suggestion!!.suggestedReps?.toString() ?: ""
+            inlineWeight = suggestion!!.suggestedWeight?.let {
+                val v = if (useLbs) it * com.workouttracker.ui.util.WeightUnit.KG_TO_LBS else it
+                if (v == kotlin.math.floor(v.toDouble()).toFloat()) v.toInt().toString()
+                else String.format("%.2f", v)
+            } ?: ""
+        }
     }
 
     Card(
@@ -344,7 +367,7 @@ fun ExerciseCard(
             }
 
             // Sets section
-            AnimatedVisibility(visible = expanded) {
+            if (expanded) {
                 Column {
                     if (sets.isNotEmpty()) {
                         Spacer(Modifier.height(12.dp))
@@ -370,56 +393,169 @@ fun ExerciseCard(
                         }
 
                         sets.forEach { set ->
-                            SetRow(
-                                set = set,
-                                useLbs = useLbs,
-                                onDelete = { viewModel.deleteSet(set) }
-                            )
-                            if (set != sets.last()) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 12.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant
+                            key("set_${set.id}") {
+                                SetRow(
+                                    set = set,
+                                    useLbs = useLbs,
+                                    onDelete = { viewModel.deleteSet(set) }
                                 )
+                                if (set != sets.last()) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 12.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
 
                     Spacer(Modifier.height(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                    Spacer(Modifier.height(10.dp))
 
-                    OutlinedButton(
-                        onClick = { showAddSet = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            brush = androidx.compose.ui.graphics.SolidColor(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    // Smart suggestion banner
+                    if (suggestion != null && suggestion!!.type != com.workouttracker.ui.util.SuggestionType.FIRST_TIME) {
+                        val bannerColor = when (suggestion!!.type) {
+                            com.workouttracker.ui.util.SuggestionType.INCREASE -> Color(0xFF4CAF50)
+                            com.workouttracker.ui.util.SuggestionType.DELOAD   -> Color(0xFFFF9800)
+                            else -> MaterialTheme.colorScheme.primary
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(bannerColor.copy(alpha = 0.1f))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(suggestion!!.emoji, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.width(8.dp))
+                            Text(suggestion!!.reason,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    } else if (lastSet != null && suggestion == null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.TrendingUp, null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                stringResource(R.string.last_session) + ": " +
+                                if (lastSet!!.isBodyweight) stringResource(R.string.bodyweight) + "×${lastSet!!.reps}"
+                                else "${lastSet!!.weight}kg×${lastSet!!.reps}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
                             )
-                        )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    // Inline set entry row
+                    val inlineRepsError   = inlineReps.isNotEmpty() && inlineReps.toIntOrNull() == null
+                    val inlineWeightError = !inlineBodyweight && inlineWeight.isNotEmpty() && inlineWeight.toFloatOrNull() == null
+                    val inlineCanAdd      = inlineReps.isNotBlank() && (inlineBodyweight || inlineWeight.isNotBlank()) && !inlineRepsError && !inlineWeightError
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.log_set), fontWeight = FontWeight.Medium)
+                        OutlinedTextField(
+                            value = inlineReps,
+                            onValueChange = { if (it.length <= 4) inlineReps = it.filter(Char::isDigit) },
+                            label = { Text(stringResource(R.string.reps)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            isError = inlineRepsError,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!inlineBodyweight) {
+                            OutlinedTextField(
+                                value = inlineWeight,
+                                onValueChange = { if (it.length <= 7) inlineWeight = it.filter { c -> c.isDigit() || c == '.' } },
+                                label = { Text(stringResource(if (useLbs) R.string.weight_lbs else R.string.weight_kg)) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                isError = inlineWeightError,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                val r = inlineReps.toIntOrNull() ?: return@Button
+                                val w = if (inlineBodyweight) 0f else (inlineWeight.toFloatOrNull() ?: return@Button)
+                                viewModel.addSet(exercise.id, r, w, inlineBodyweight)
+                            },
+                            enabled = inlineCanAdd,
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.log_set), modifier = Modifier.size(20.dp))
+                        }
+                    }
+
+                    // Bodyweight toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { inlineBodyweight = !inlineBodyweight }
+                            .padding(horizontal = 14.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(stringResource(R.string.bodyweight),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface)
+                        Switch(
+                            checked = inlineBodyweight,
+                            onCheckedChange = { inlineBodyweight = it },
+                            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary)
+                        )
+                    }
+
+                    // 1RM estimate
+                    val estimated1RM = remember(inlineWeight, inlineReps) {
+                        val w = inlineWeight.toFloatOrNull()
+                        val r = inlineReps.toIntOrNull()
+                        if (w != null && r != null && w > 0 && r in 1..30)
+                            calculate1RM(if (useLbs) w * com.workouttracker.ui.util.WeightUnit.LBS_TO_KG else w, r)
+                        else null
+                    }
+                    if (estimated1RM != null) {
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(stringResource(R.string.est_1rm),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${String.format("%.1f", estimated1RM)} kg",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.ExtraBold)
+                        }
                     }
                 }
             }
         }
-    }
-
-    if (showAddSet) {
-        AddSetDialog(
-            exerciseName = exercise.exerciseName,
-            lastSet      = lastSet,
-            suggestion   = suggestion,
-            useLbs       = useLbs,
-            onDismiss    = { showAddSet = false },
-            onAdd = { reps, weight, isBodyweight ->
-                viewModel.addSet(exercise.id, reps, weight, isBodyweight)
-                showAddSet = false
-            }
-        )
     }
 }
 
@@ -802,7 +938,7 @@ fun ExercisePickerDialog(
                             )
                         }
                         
-                        items(exercises) { exercise ->
+                        items(exercises, key = { "search_ex_${category}_$it" }) { exercise ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

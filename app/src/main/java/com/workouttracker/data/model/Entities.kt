@@ -29,8 +29,11 @@ data class ExerciseSet(
 data class CardioSession(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val date: String, val type: String,
+    val name: String = "",       // optional user-given label
     val distanceKm: Float? = null, val durationMinutes: Int? = null,
-    val weightKg: Float? = null, val calories: Int? = null, val notes: String = "")
+    val weightKg: Float? = null, val calories: Int? = null, val notes: String = "",
+    val routeJson: String = ""   // "lat,lon;lat,lon;…" — empty for manually logged sessions
+)
 
 @Entity(tableName = "bodyweight_entries")
 data class BodyweightEntry(@PrimaryKey val date: String, val weightKg: Float)

@@ -129,9 +129,10 @@ fun WorkoutTrackerApp() {
         )
 
         val detailPrefixes = listOf(
-            "workout/", "program/", "custom_program/", "exercise_history/",
+            "workout/", "program/", "custom_program/", "exercise_history",
             "bodyweight", "plate_calc", "templates", "exercise_history_list",
-            "new_custom_program", "account", "user_profile"
+            "new_custom_program", "account", "user_profile",
+            Routes.LIVE_TRACKING
         )
         val showBottomBar = currentRoute != null &&
                 detailPrefixes.none { currentRoute.startsWith(it) }
@@ -191,9 +192,8 @@ fun WorkoutTrackerApp() {
                                     selected = selected,
                                     onClick  = {
                                         if (!selected) navController.navigate(item.route) {
-                                            popUpTo(Routes.CALENDAR) { saveState = true }
+                                            popUpTo(Routes.CALENDAR) { inclusive = false }
                                             launchSingleTop = true
-                                            restoreState    = true
                                         }
                                     },
                                     icon  = { Icon(if (selected) item.selectedIcon else item.unselectedIcon, item.label) },

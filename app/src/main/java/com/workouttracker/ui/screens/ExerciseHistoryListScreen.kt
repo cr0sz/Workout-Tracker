@@ -7,20 +7,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.workouttracker.ui.components.EmptyPlaceholder
 import com.workouttracker.ui.viewmodel.WorkoutViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseHistoryListScreen(
     viewModel: WorkoutViewModel,
-    onSelectExercise: (String) -> Unit
+    onSelectExercise: (String) -> Unit,
+    onBack: () -> Unit = {}
 ) {
     val exerciseNames by viewModel.allUsedExerciseNames.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -30,14 +32,24 @@ fun ExerciseHistoryListScreen(
         else exerciseNames.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Exercise History") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = innerPadding.calculateTopPadding() + 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            Text("Exercise History", style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
             Text("Tap any exercise to see your progression",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -62,7 +74,7 @@ fun ExerciseHistoryListScreen(
                     else "No exercises match your search")
             }
         } else {
-            items(filtered) { name ->
+            items(filtered, key = { "exercise_$it" }) { name ->
                 Card(modifier = Modifier.fillMaxWidth().clickable { onSelectExercise(name) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(12.dp)) {
@@ -81,4 +93,5 @@ fun ExerciseHistoryListScreen(
             }
         }
     }
+    } // Scaffold
 }

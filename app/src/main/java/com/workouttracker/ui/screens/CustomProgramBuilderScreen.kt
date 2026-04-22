@@ -50,7 +50,7 @@ fun CustomProgramsScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        item {
+        item(key = "header") {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically) {
@@ -72,11 +72,11 @@ fun CustomProgramsScreen(
         }
 
         if (programs.isEmpty()) {
-            item {
+            item(key = "empty") {
                 EmptyPlaceholder(Icons.Default.Build, "Tap + to build your first custom program")
             }
         } else {
-            items(programs, key = { it.id }) { program ->
+            items(programs, key = { "program_${it.id}" }) { program ->
                 val prog = progress.find { it.programId == "custom_${program.id}" }
                 CustomProgramCard(
                     program  = program,
@@ -265,14 +265,18 @@ fun CustomProgramDetailScreen(
     onLoadedToWorkout: (String) -> Unit
 ) {
     val programs by viewModel.allCustomPrograms.collectAsState()
-    val program = programs.find { it.id == programId }
+    val program = remember(programs, programId) { programs.find { it.id == programId } }
     val days by viewModel.getCustomDays(programId).collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     var showAddDayDialog by remember { mutableStateOf(false) }
     var showLoadDialog by remember { mutableStateOf(false) }
     val snackState = remember { SnackbarHostState() }
 
-    if (program == null) { onBack(); return }
+    LaunchedEffect(program) {
+        if (program == null) onBack()
+    }
+
+    if (program == null) return
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -311,7 +315,7 @@ fun CustomProgramDetailScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item {
+            item(key = "program_stats") {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     BuilderMiniStat(Icons.Default.Repeat, "${program.daysPerWeek}x/week")
                     BuilderMiniStat(Icons.Default.CalendarToday, "${program.durationWeeks} weeks")
@@ -320,12 +324,12 @@ fun CustomProgramDetailScreen(
             }
 
             if (days.isEmpty()) {
-                item {
+                item(key = "empty_days_placeholder") {
                     EmptyPlaceholder(Icons.Default.CalendarToday,
                         "Tap + to add your first training day")
                 }
             } else {
-                items(days, key = { it.id }) { day ->
+                items(days, key = { "day_${it.id}" }) { day ->
                     CustomDayCard(day = day, viewModel = viewModel,
                         onDelete = { viewModel.deleteCustomDay(day) })
                 }
@@ -415,26 +419,28 @@ fun CustomDayCard(day: CustomProgramDay, viewModel: WorkoutViewModel, onDelete: 
                 }
             }
 
-            AnimatedVisibility(visible = expanded && !day.isRestDay) {
+            if (expanded && !day.isRestDay) {
                 Column(modifier = Modifier.padding(top = 10.dp)) {
                     exercises.forEach { ex ->
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.FitnessCenter, null,
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                                modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text(ex.exerciseName, modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface)
-                            Text("${ex.sets}×${ex.reps}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-                            IconButton(onClick = { scope.launch { viewModel.deleteCustomExercise(ex) } },
-                                modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.Close, null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        key("exercise_${ex.id}") {
+                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.FitnessCenter, null,
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                                     modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(ex.exerciseName, modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface)
+                                Text("${ex.sets}×${ex.reps}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                                IconButton(onClick = { scope.launch { viewModel.deleteCustomExercise(ex) } },
+                                    modifier = Modifier.size(28.dp)) {
+                                    Icon(Icons.Default.Close, null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(14.dp))
+                                }
                             }
                         }
                     }
@@ -580,8 +586,9 @@ fun LoadCustomDayDialog(days: List<CustomProgramDay>, onDismiss: () -> Unit, onL
         onDismissRequest = onDismiss,
         title = { Text("Load Day into Today") },
         text = {
+            val validDays = remember(days) { days.filter { !it.isRestDay } }
             LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
-                items(days.filter { !it.isRestDay }) { day ->
+                items(validDays, key = { "load_day_${it.id}" }) { day ->
                     ListItem(
                         headlineContent = { Text(day.name, fontWeight = FontWeight.Bold) },
                         supportingContent = { if (day.focus.isNotBlank()) Text(day.focus) },

@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.workouttracker.R
 import com.workouttracker.data.model.CARDIO_TYPES
 import com.workouttracker.data.model.CardioSession
+import com.workouttracker.service.TrackingService
 import com.workouttracker.ui.components.EmptyPlaceholder
 import com.workouttracker.ui.viewmodel.WorkoutViewModel
 import java.time.LocalDate
@@ -35,22 +36,49 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardioScreen(viewModel: WorkoutViewModel) {
+fun CardioScreen(
+    viewModel: WorkoutViewModel,
+    onTrackRun: () -> Unit = {}
+) {
     val sessions by viewModel.allCardioSessions.collectAsStateWithLifecycle(initialValue = emptyList())
+    val isTracking by TrackingService.isTracking.collectAsStateWithLifecycle()
+    val useLbs by viewModel.useLbs.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
+
+    val grouped = remember(sessions) { sessions.groupBy { it.date } }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp)
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.log_cardio), fontWeight = FontWeight.SemiBold)
+                ExtendedFloatingActionButton(
+                    onClick = onTrackRun,
+                    containerColor = if (isTracking) MaterialTheme.colorScheme.error
+                                     else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (isTracking) Color.White
+                                   else MaterialTheme.colorScheme.onSecondaryContainer,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.DirectionsRun, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (isTracking) "Live Run" else "Track Run",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                ExtendedFloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.log_cardio), fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     ) { padding ->
@@ -62,6 +90,44 @@ fun CardioScreen(viewModel: WorkoutViewModel) {
             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Active tracking banner
+            if (isTracking) {
+                item(key = "tracking_banner") {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { onTrackRun() },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.error)
+                            )
+                            Text(
+                                "Run in progress — tap to return",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                }
+            }
+
             item {
                 Text(
                     stringResource(R.string.cardio_title),
@@ -87,7 +153,6 @@ fun CardioScreen(viewModel: WorkoutViewModel) {
                 }
             } else {
                 // Group by date header
-                val grouped = sessions.groupBy { it.date }
                 grouped.forEach { (date, daySessions) ->
                     item(key = "header_$date") {
                         val localDate = runCatching { LocalDate.parse(date) }.getOrNull()
@@ -114,7 +179,8 @@ fun CardioScreen(viewModel: WorkoutViewModel) {
                     items(daySessions, key = { it.id }) { session ->
                         CardioSessionCard(
                             session = session,
-                            onDelete = { viewModel.deleteCardioSession(session) }
+                            onDelete = { viewModel.deleteCardioSession(session) },
+                            useLbs = useLbs
                         )
                     }
                 }
@@ -137,7 +203,7 @@ fun CardioScreen(viewModel: WorkoutViewModel) {
 // ── Cardio Session Card ───────────────────────────────────────────────────────
 
 @Composable
-fun CardioSessionCard(session: CardioSession, onDelete: () -> Unit) {
+fun CardioSessionCard(session: CardioSession, onDelete: () -> Unit, useLbs: Boolean = false) {
     val icon = when (session.type.lowercase()) {
         "walk"         -> Icons.Default.DirectionsWalk
         "run"          -> Icons.Default.DirectionsRun
@@ -171,12 +237,26 @@ fun CardioSessionCard(session: CardioSession, onDelete: () -> Unit) {
             Spacer(Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    session.type,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                if (session.name.isNotBlank()) {
+                    Text(
+                        session.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        session.type,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Text(
+                        session.type,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 // Stat chips row
                 val pace = if (session.distanceKm != null && session.durationMinutes != null &&
@@ -191,10 +271,14 @@ fun CardioSessionCard(session: CardioSession, onDelete: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 4.dp)
                 ) {
-                    session.distanceKm?.let { StatChip("${it} km") }
+                    session.distanceKm?.let { StatChip("${"%.2f".format(it)} km") }
                     session.durationMinutes?.let { StatChip("${it} min") }
                     pace?.let { StatChip(it) }
-                    session.weightKg?.let { StatChip("${it} kg") }
+                    session.weightKg?.let {
+                        val w = if (useLbs) it * 2.20462f else it
+                        val unit = if (useLbs) "lbs" else "kg"
+                        StatChip("${String.format("%.1f", w)} $unit")
+                    }
                     session.calories?.let { StatChip("${it} kcal") }
                 }
 
@@ -247,6 +331,7 @@ fun AddCardioDialog(
     onDismiss: () -> Unit,
     onSave: (CardioSession) -> Unit
 ) {
+    var sessionName by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("Walk") }
     var distance by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
@@ -275,6 +360,19 @@ fun AddCardioDialog(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
+                }
+
+                // Session name (optional)
+                item {
+                    OutlinedTextField(
+                        value = sessionName,
+                        onValueChange = { sessionName = it },
+                        label = { Text("Name (optional)") },
+                        placeholder = { Text("e.g. Morning run, Evening walk…") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
                 }
 
                 // Type picker
@@ -426,6 +524,7 @@ fun AddCardioDialog(
                                     CardioSession(
                                         date            = defaultDate,
                                         type            = selectedType,
+                                        name            = sessionName.trim(),
                                         distanceKm      = distance.toFloatOrNull(),
                                         durationMinutes = duration.toIntOrNull(),
                                         weightKg        = weight.toFloatOrNull(),

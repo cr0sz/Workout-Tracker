@@ -106,7 +106,7 @@ private fun ProgramLibraryTab(
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
         // Category filter chips
-        item {
+        item(key = "category_filter_chips") {
             Spacer(Modifier.height(12.dp))
             Row(
                 modifier = Modifier
@@ -138,7 +138,7 @@ private fun ProgramLibraryTab(
                     )
                     Spacer(Modifier.height(10.dp))
                 }
-                item { Spacer(Modifier.height(6.dp)) }
+                item(key = "spacer_${cat.name}") { Spacer(Modifier.height(6.dp)) }
             }
         } else {
             items(filtered, key = { it.id }) { program ->
@@ -172,7 +172,7 @@ private fun MyProgramsTab(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             if (programs.isEmpty()) {
-                item {
+                item(key = "empty_custom_programs") {
                     Spacer(Modifier.height(24.dp))
                     com.workouttracker.ui.components.EmptyPlaceholder(
                         icon = Icons.Default.Build,

@@ -28,6 +28,10 @@ class WorkoutRepository(private val dao: WorkoutDao) {
     suspend fun deleteAllSetsForExercise(id: Long) = dao.deleteAllSetsForExercise(id)
     suspend fun getAllSetsSync() = dao.getAllSetsSync()
 
+    suspend fun getExerciseById(id: Long) = dao.getExerciseById(id)
+    fun getExercisesInRange(start: String, end: String) = dao.getExercisesInRange(start, end)
+    suspend fun getMaxWeightForExercise(name: String) = dao.getMaxWeightForExercise(name)
+
     // Progressive overload
     suspend fun getBestLastSet(name: String, before: String) = dao.getBestLastSet(name, before)
 
@@ -86,6 +90,9 @@ class WorkoutRepository(private val dao: WorkoutDao) {
     fun getCustomExercises(id: Long) = dao.getCustomExercises(id)
     suspend fun getCustomExercisesSync(id: Long) = dao.getCustomExercisesSync(id)
     suspend fun deleteAllCustomExercises(id: Long) = dao.deleteAllCustomExercises(id)
+
+    // Workout summaries
+    fun getWorkoutSummaries() = dao.getWorkoutSummaries()
 
     // Stats
     fun getTotalWorkouts() = dao.getTotalWorkouts()

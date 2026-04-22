@@ -44,7 +44,7 @@ fun WorkoutTemplatesScreen(viewModel: WorkoutViewModel) {
             contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item {
+            item(key = "header_text") {
                 Text("Workout Templates", style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
                 Text("Save your workouts and reuse them in one tap",
@@ -54,7 +54,7 @@ fun WorkoutTemplatesScreen(viewModel: WorkoutViewModel) {
             }
 
             // How to save hint
-            item {
+            item(key = "hint_card") {
                 Card(colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
                     shape = RoundedCornerShape(14.dp)) {
@@ -70,12 +70,12 @@ fun WorkoutTemplatesScreen(viewModel: WorkoutViewModel) {
             }
 
             if (templates.isEmpty()) {
-                item {
+                item(key = "empty_templates") {
                     EmptyPlaceholder(Icons.Default.BookmarkBorder,
                         "No templates yet — log a workout and save it as a template")
                 }
             } else {
-                items(templates, key = { it.id }) { template ->
+                items(templates, key = { "template_${it.id}" }) { template ->
                     val exercises by viewModel.getTemplateExercises(template.id)
                         .collectAsState(initial = emptyList())
                     val lastUsed = runCatching { LocalDate.parse(template.lastUsedDate) }.getOrNull()
@@ -120,13 +120,15 @@ fun WorkoutTemplatesScreen(viewModel: WorkoutViewModel) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     modifier = Modifier.fillMaxWidth()) {
                                     exercises.take(4).forEach { ex ->
-                                        Box(modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                            Text(ex.exerciseName.split(" ").first(),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        key("chip_${ex.id}") {
+                                            Box(modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)) {
+                                                Text(ex.exerciseName.split(" ").first(),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            }
                                         }
                                     }
                                     if (exercises.size > 4) {
@@ -195,25 +197,27 @@ fun WorkoutTemplatesScreen(viewModel: WorkoutViewModel) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(16.dp))
                     exercises.forEachIndexed { i, ex ->
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(26.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center) {
-                                Text("${i + 1}", style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        key("preview_${ex.id}") {
+                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier.size(26.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center) {
+                                    Text("${i + 1}", style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                }
+                                Spacer(Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(ex.exerciseName, style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface)
+                                    Text("${ex.defaultSets} sets · ${ex.defaultReps} reps",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
-                            Spacer(Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(ex.exerciseName, style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                                Text("${ex.defaultSets} sets · ${ex.defaultReps} reps",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
+                            if (i < exercises.size - 1) HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                         }
-                        if (i < exercises.size - 1) HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                     }
                     Spacer(Modifier.height(16.dp))
                     TextButton(onClick = { showPreviewDialog = null }, modifier = Modifier.align(Alignment.End)) {

@@ -2,6 +2,8 @@ package com.workouttracker.data.db
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.workouttracker.data.model.*
 
 @Database(entities = [
@@ -10,7 +12,7 @@ import com.workouttracker.data.model.*
     WorkoutTemplate::class, TemplateExercise::class,
     CustomProgram::class, CustomProgramDay::class, CustomProgramExercise::class,
     UserProfile::class, AiChatMessage::class
-], version = 5, exportSchema = true)
+], version = 7, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
     abstract fun aiDao(): AiDao
@@ -18,14 +20,45 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
 
-        // ── Add new migrations here whenever version bumps ─────────────────────
-        // Example for a future v5→v6 bump:
-        //
-        // val MIGRATION_5_6 = object : Migration(5, 6) {
-        //     override fun migrate(db: SupportSQLiteDatabase) {
-        //         db.execSQL("ALTER TABLE WorkoutExercise ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
-        //     }
-        // }
+        // v5 → v6: add routeJson column to cardio_sessions
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE cardio_sessions ADD COLUMN routeJson TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        // v6 → v7: add name column to cardio_sessions + create AI tables
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE cardio_sessions ADD COLUMN name TEXT NOT NULL DEFAULT ''"
+                )
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `user_profile` (
+                        `id` INTEGER NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `age` INTEGER NOT NULL,
+                        `experience` TEXT NOT NULL,
+                        `primaryGoal` TEXT NOT NULL,
+                        `injuries` TEXT NOT NULL,
+                        `preferredSplit` TEXT NOT NULL,
+                        `trainingDaysPerWeek` INTEGER NOT NULL,
+                        `additionalNotes` TEXT NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                """.trimIndent())
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `ai_chat_messages` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `role` TEXT NOT NULL,
+                        `content` TEXT NOT NULL,
+                        `timestamp` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase = INSTANCE ?: synchronized(this) {
             Room.databaseBuilder(
@@ -33,8 +66,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "workout_database"
             )
-                // .addMigrations(MIGRATION_5_6)  ← add migrations here when bumping version
-                .fallbackToDestructiveMigration()
+                .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                 .build().also { INSTANCE = it }
         }
     }

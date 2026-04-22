@@ -16,7 +16,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.workoutttracker"
+        applicationId "com.workouttracker"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -45,7 +45,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
         debug {
@@ -72,7 +72,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.4'
+        kotlinCompilerExtensionVersion '1.5.9'
     }
 
     packagingOptions {
@@ -111,6 +111,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx:22.3.1'
     implementation 'com.google.firebase:firebase-firestore-ktx:24.10.0'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-location:21.1.0'
+    implementation 'org.osmdroid:osmdroid-android:6.1.17'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'

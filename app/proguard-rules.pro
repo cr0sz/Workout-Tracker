@@ -1,8 +1,14 @@
+# Disable ALL bytecode optimizations — R8's optimizer rewrites Compose's
+# SnapshotStateList sync methods in a way that ART's lock-verifier rejects,
+# which corrupts the slot table and crashes on first render.
+-dontoptimize
+
 # Jetpack Compose
 -keepclassmembers class **.R$* {
     public static <fields>;
 }
 -keep class androidx.compose.material.icons.** { *; }
+-keep class androidx.compose.runtime.** { *; }
 
 # Room
 -keep class * extends androidx.room.RoomDatabase

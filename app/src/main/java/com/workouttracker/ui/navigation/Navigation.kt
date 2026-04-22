@@ -1,5 +1,6 @@
 package com.workouttracker.ui.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,6 +17,7 @@ import com.workouttracker.ui.viewmodel.WorkoutViewModel
 object Routes {
     const val CALENDAR              = "calendar"
     const val CARDIO                = "cardio"
+    const val LIVE_TRACKING         = "live_tracking"
     const val PROGRAMS              = "programs"
     const val CUSTOM_PROGRAMS       = "custom_programs"
     const val NEW_CUSTOM_PROGRAM    = "new_custom_program"
@@ -31,11 +33,11 @@ object Routes {
     const val WORKOUT               = "workout/{date}"
     const val PROGRAM_DETAIL        = "program/{programId}"
     const val CUSTOM_PROGRAM_DETAIL = "custom_program/{programId}"
-    const val EXERCISE_HISTORY      = "exercise_history/{exerciseName}"
+    const val EXERCISE_HISTORY      = "exercise_history?exerciseName={exerciseName}"
     fun workout(date: String)           = "workout/$date"
     fun programDetail(id: String)       = "program/$id"
     fun customProgramDetail(id: Long)   = "custom_program/$id"
-    fun exerciseHistory(name: String)   = "exercise_history/${name.replace("/","_")}"
+    fun exerciseHistory(name: String)   = "exercise_history?exerciseName=${Uri.encode(name)}"
 }
 
 @Composable
@@ -66,7 +68,19 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() })
         }
 
-        composable(Routes.CARDIO) { CardioScreen(viewModel = viewModel) }
+        composable(Routes.CARDIO) {
+            CardioScreen(
+                viewModel = viewModel,
+                onTrackRun = { navController.navigate(Routes.LIVE_TRACKING) }
+            )
+        }
+
+        composable(Routes.LIVE_TRACKING) {
+            LiveTrackingScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         composable(Routes.PROGRAMS) {
             ProgramsScreen(
@@ -114,7 +128,11 @@ fun AppNavigation(
         }
 
         composable(Routes.HISTORY) {
-            HistoryScreen(viewModel = viewModel)
+            HistoryScreen(
+                viewModel = viewModel,
+                onWorkoutClick = { navController.navigate(Routes.workout(it)) },
+                onExerciseClick = { navController.navigate(Routes.exerciseHistory(it)) }
+            )
         }
 
         composable(Routes.TOOLS) {
@@ -136,7 +154,8 @@ fun AppNavigation(
 
         composable(Routes.EXERCISE_HISTORY_LIST) {
             ExerciseHistoryListScreen(viewModel = viewModel,
-                onSelectExercise = { navController.navigate(Routes.exerciseHistory(it)) })
+                onSelectExercise = { navController.navigate(Routes.exerciseHistory(it)) },
+                onBack = { navController.popBackStack() })
         }
 
         composable(Routes.AI_COACH) {
@@ -154,7 +173,11 @@ fun AppNavigation(
         }
 
         composable(Routes.EXERCISE_HISTORY,
-            arguments = listOf(navArgument("exerciseName") { type = NavType.StringType })
+            arguments = listOf(navArgument("exerciseName") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
         ) { back ->
             val name = back.arguments?.getString("exerciseName") ?: return@composable
             ExerciseHistoryScreen(exerciseName = name, viewModel = viewModel,

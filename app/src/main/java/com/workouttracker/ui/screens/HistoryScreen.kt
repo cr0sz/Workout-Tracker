@@ -2,6 +2,7 @@ package com.workouttracker.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.workouttracker.R
 import com.workouttracker.data.db.ExerciseCount
 import com.workouttracker.data.db.VolumeEntry
+import com.workouttracker.data.db.WorkoutSummary
 import com.workouttracker.data.model.EXERCISE_CATEGORIES
 import com.workouttracker.ui.viewmodel.WorkoutViewModel
 import java.time.LocalDate
@@ -37,7 +39,11 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun HistoryScreen(viewModel: WorkoutViewModel) {
+fun HistoryScreen(
+    viewModel: WorkoutViewModel,
+    onWorkoutClick: (String) -> Unit = {},
+    onExerciseClick: (String) -> Unit = {}
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf(stringResource(R.string.history), stringResource(R.string.stats_title))
 
@@ -85,15 +91,18 @@ fun HistoryScreen(viewModel: WorkoutViewModel) {
         }
 
         when (selectedTab) {
-            0 -> WorkoutHistoryList(viewModel)
-            1 -> StatsContent(viewModel)
+            0 -> WorkoutHistoryList(viewModel, onWorkoutClick)
+            1 -> StatsContent(viewModel, onExerciseClick)
         }
     }
 }
 
 @Composable
-fun WorkoutHistoryList(viewModel: WorkoutViewModel) {
+fun WorkoutHistoryList(viewModel: WorkoutViewModel, onWorkoutClick: (String) -> Unit = {}) {
     val history by viewModel.allWorkouts.collectAsStateWithLifecycle(initialValue = emptyList())
+    val summaries by viewModel.workoutSummaries.collectAsStateWithLifecycle(initialValue = emptyList())
+    val useLbs by viewModel.useLbs.collectAsStateWithLifecycle()
+    val summaryMap = remember(summaries) { summaries.associateBy { it.date } }
 
     if (history.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -118,22 +127,42 @@ fun WorkoutHistoryList(viewModel: WorkoutViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(history) { workout ->
-                HistoryCard(workout.date)
+            items(history, key = { "workout_${it.date}" }) { workout ->
+                HistoryCard(
+                    date = workout.date,
+                    summary = summaryMap[workout.date],
+                    useLbs = useLbs,
+                    onClick = { onWorkoutClick(workout.date) }
+                )
             }
         }
     }
 }
 
 @Composable
-fun HistoryCard(date: String) {
-    val localDate = remember(date) { LocalDate.parse(date) }
-    val dayName = remember(localDate) { localDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()) }
+fun HistoryCard(
+    date: String,
+    summary: WorkoutSummary? = null,
+    useLbs: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    val localDate = remember(date) { runCatching { LocalDate.parse(date) }.getOrElse { LocalDate.now() } }
+    val dayName   = remember(localDate) { localDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()) }
     val monthName = remember(localDate) { localDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
-    val dayNum = localDate.dayOfMonth
+    val dayNum    = localDate.dayOfMonth
+
+    val volumeDisplay = remember(summary, useLbs) {
+        val raw = summary?.totalVolume ?: 0f
+        val v   = if (useLbs) raw * com.workouttracker.ui.util.WeightUnit.KG_TO_LBS else raw
+        val unit = if (useLbs) "lbs" else "kg"
+        if (v >= 1000f) "${String.format("%.1f", v / 1000f)}k $unit"
+        else "${String.format("%.0f", v)} $unit"
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -141,10 +170,10 @@ fun HistoryCard(date: String) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Date Circle
+            // Date badge
             Column(
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(54.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -171,19 +200,47 @@ fun HistoryCard(date: String) {
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
+                if (summary != null) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        HistoryChip(Icons.Default.FitnessCenter, "${summary.exerciseCount} exercises")
+                        HistoryChip(Icons.Default.Layers, "${summary.setCount} sets")
+                        if (summary.totalVolume > 0f) {
+                            HistoryChip(Icons.AutoMirrored.Filled.TrendingUp, volumeDisplay)
+                        }
+                    }
+                }
             }
 
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
 }
 
 @Composable
-fun StatsContent(viewModel: WorkoutViewModel) {
+private fun HistoryChip(icon: ImageVector, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            icon,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.width(3.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun StatsContent(viewModel: WorkoutViewModel, onExerciseClick: (String) -> Unit = {}) {
     val totalWorkouts by viewModel.totalWorkouts.collectAsStateWithLifecycle(initialValue = 0)
     val totalVolume by viewModel.totalVolume.collectAsStateWithLifecycle(initialValue = 0f)
     val personalRecords by viewModel.personalRecords.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -311,13 +368,13 @@ fun StatsContent(viewModel: WorkoutViewModel) {
                 )
             }
         } else {
-            items(personalRecords) { pr ->
+            items(personalRecords, key = { "pr_${it.exerciseName}" }) { pr ->
                 val weightValue = if (useLbs) pr.maxWeight * com.workouttracker.ui.util.WeightUnit.KG_TO_LBS else pr.maxWeight
                 val unitLabel = if (useLbs) "lbs" else "kg"
                 val formattedWeight = if (weightValue == Math.floor(weightValue.toDouble()).toFloat()) weightValue.toInt().toString()
                                       else String.format("%.1f", weightValue)
                 
-                PRCard(pr.exerciseName, "$formattedWeight $unitLabel", pr.date)
+                PRCard(pr.exerciseName, "$formattedWeight $unitLabel", pr.date, onClick = { onExerciseClick(pr.exerciseName) })
             }
         }
     }
@@ -332,9 +389,10 @@ fun VolumeChart(
 ) {
     val factor = if (useLbs) com.workouttracker.ui.util.WeightUnit.KG_TO_LBS else 1f
     val data = entries.map { it.volume * factor }
+    if (data.size < 2) return
     val minV = 0f
     val maxV = (data.maxOrNull() ?: 1f) * 1.1f
-    val range = maxV - minV
+    val range = (maxV - minV).coerceAtLeast(1f)
 
     Canvas(modifier = Modifier.fillMaxWidth().height(180.dp)) {
         val w = size.width
@@ -463,7 +521,7 @@ fun StatLongCard(title: String, value: String, subtitle: String, icon: ImageVect
 }
 
 @Composable
-fun PRCard(exercise: String, record: String, date: String) {
+fun PRCard(exercise: String, record: String, date: String, onClick: (() -> Unit)? = null) {
     val localDate = remember(date) { runCatching { LocalDate.parse(date) }.getOrNull() }
     val displayDate = remember(localDate) {
         localDate?.let {
@@ -472,7 +530,9 @@ fun PRCard(exercise: String, record: String, date: String) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -491,6 +551,15 @@ fun PRCard(exercise: String, record: String, date: String) {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
+            if (onClick != null) {
+                Spacer(Modifier.width(8.dp))
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

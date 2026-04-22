@@ -17,13 +17,12 @@ object WeightUnit {
 
     fun unitLabel(useLbs: Boolean) = if (useLbs) "lbs" else "kg"
 
-    /** Compact label for chart axes — omits decimal if whole number. */
+    /** Compact label for chart axes — omits decimal if whole number. Callers must pre-convert to the target unit. */
     fun format(value: Float, useLbs: Boolean): String {
-        val v = if (useLbs) value else value
-        return if (v == kotlin.math.floor(v.toDouble()).toFloat())
-            "${v.toInt()} ${unitLabel(useLbs)}"
+        return if (value == kotlin.math.floor(value.toDouble()).toFloat())
+            "${value.toInt()} ${unitLabel(useLbs)}"
         else
-            "${String.format("%.1f", v)} ${unitLabel(useLbs)}"
+            "${String.format("%.1f", value)} ${unitLabel(useLbs)}"
     }
 
     fun toKg(value: Float, useLbs: Boolean) = if (useLbs) value * LBS_TO_KG else value

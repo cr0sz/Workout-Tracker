@@ -6,11 +6,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.*
 import com.workouttracker.data.db.AppDatabase
 import com.workouttracker.data.db.ExerciseCount
 import com.workouttracker.data.db.VolumeEntry
+import com.workouttracker.data.db.WorkoutSummary
 import com.workouttracker.data.model.*
 import com.workouttracker.data.repository.WorkoutRepository
+import com.workouttracker.service.ReminderWorker
 import com.workouttracker.ui.util.AppErrorBus
 import com.workouttracker.ui.util.safeCall
 import kotlinx.coroutines.Job
@@ -21,9 +24,11 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class WorkoutViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -78,6 +83,53 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
 
         // Also update the JVM default locale to ensure immediate consistency in formatting
         Locale.setDefault(Locale(langCode))
+    }
+
+    // ── PR Events ─────────────────────────────────────────────────────────────
+    private val _newPrExercise = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val newPrExercise: SharedFlow<String> = _newPrExercise.asSharedFlow()
+
+    // ── Workout Reminders ─────────────────────────────────────────────────────
+    private val _reminderEnabled = MutableStateFlow(prefs.getBoolean("reminder_enabled", false))
+    val reminderEnabled: StateFlow<Boolean> = _reminderEnabled.asStateFlow()
+
+    private val _reminderHour = MutableStateFlow(prefs.getInt("reminder_hour", 9))
+    val reminderHour: StateFlow<Int> = _reminderHour.asStateFlow()
+
+    private val _reminderMinute = MutableStateFlow(prefs.getInt("reminder_minute", 0))
+    val reminderMinute: StateFlow<Int> = _reminderMinute.asStateFlow()
+
+    fun setReminder(context: Context, enabled: Boolean, hour: Int = _reminderHour.value, minute: Int = _reminderMinute.value) {
+        _reminderEnabled.value = enabled
+        _reminderHour.value = hour
+        _reminderMinute.value = minute
+        prefs.edit()
+            .putBoolean("reminder_enabled", enabled)
+            .putInt("reminder_hour", hour)
+            .putInt("reminder_minute", minute)
+            .apply()
+
+        val wm = WorkManager.getInstance(context)
+        if (enabled) {
+            // Calculate initial delay from now until the next occurrence of hour:minute
+            val now = LocalTime.now()
+            val target = LocalTime.of(hour, minute)
+            val delayMinutes = if (target.isAfter(now)) {
+                java.time.temporal.ChronoUnit.MINUTES.between(now, target)
+            } else {
+                java.time.temporal.ChronoUnit.MINUTES.between(now, target) + 24 * 60
+            }
+            val request = PeriodicWorkRequestBuilder<ReminderWorker>(24, TimeUnit.HOURS)
+                .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
+                .build()
+            wm.enqueueUniquePeriodicWork(
+                "workout_reminder",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                request
+            )
+        } else {
+            wm.cancelUniqueWork("workout_reminder")
+        }
     }
 
     // ── Timer Settings ──
@@ -174,9 +226,11 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     val allUsedExerciseNames = repo.getAllUsedExerciseNames().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val volumeOverTime   = repo.getVolumeOverTime().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val muscleDistribution = repo.getAllExerciseSetCounts().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val workoutSummaries = repo.getWorkoutSummaries().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<WorkoutSummary>())
 
     // ── Per-date flows ────────────────────────────────────────────────────────
     fun getExercisesForDate(date: String) = repo.getExercisesForWorkout(date)
+    fun getExercisesInRange(start: String, end: String) = repo.getExercisesInRange(start, end)
     fun getSetsForExercise(id: Long)      = repo.getSetsForExercise(id)
     suspend fun getSetsSync(id: Long)     = repo.getSetsForExerciseSync(id)
     fun getCardioForDate(date: String)    = repo.getCardioForDate(date)
@@ -235,6 +289,20 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     fun addSet(exerciseId: Long, reps: Int, weightKg: Float, isBodyweight: Boolean) = viewModelScope.launch {
         safeCall("Couldn't save set. Please try again.") {
             val count = repo.getSetsForExerciseSync(exerciseId).size
+
+            // Check for a new personal record BEFORE inserting so the query
+            // reflects only previous data.
+            var prExerciseName: String? = null
+            if (!isBodyweight && weightKg > 0) {
+                val exercise = repo.getExerciseById(exerciseId)
+                if (exercise != null) {
+                    val prevMax = repo.getMaxWeightForExercise(exercise.exerciseName)
+                    if (prevMax == null || weightKg > prevMax) {
+                        prExerciseName = exercise.exerciseName
+                    }
+                }
+            }
+
             repo.insertSet(ExerciseSet(
                 exerciseId   = exerciseId,
                 setNumber    = count + 1,
@@ -242,6 +310,9 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
                 weight       = weightKg,
                 isBodyweight = isBodyweight
             ))
+
+            prExerciseName?.let { _newPrExercise.tryEmit(it) }
+
             if (_timerEnabled.value) {
                 startTimer(_defaultRestSeconds.value)
             }

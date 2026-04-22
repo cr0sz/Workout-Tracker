@@ -105,8 +105,8 @@ fun ExerciseHistoryScreen(
     onBack: () -> Unit
 ) {
     val useLbs  by viewModel.useLbs.collectAsState()
-    val history by viewModel.getExerciseHistory(exerciseName).collectAsState(initial = emptyList())
-    val allSets by viewModel.getExerciseSetHistory(exerciseName).collectAsState(initial = emptyList())
+    val history by remember(exerciseName) { viewModel.getExerciseHistory(exerciseName) }.collectAsState(initial = emptyList())
+    val allSets by remember(exerciseName) { viewModel.getExerciseSetHistory(exerciseName) }.collectAsState(initial = emptyList())
 
     val bestEver      = history.maxByOrNull { it.maxWeight }
     val totalSessions = history.size
@@ -187,52 +187,51 @@ fun ExerciseHistoryScreen(
                     EmptyPlaceholder(Icons.Default.FitnessCenter,
                         "No weighted sets logged for this exercise yet")
                 }
-                return@LazyColumn
-            }
+            } else {
+                // ── Weekly tab ────────────────────────────────────────────────────
+                if (selectedTab == 0) {
+                    val weeks = buildWeekGroups(history)
 
-            // ── Weekly tab ────────────────────────────────────────────────────
-            if (selectedTab == 0) {
-                val weeks = buildWeekGroups(history)
-
-                item {
-                    WeeklyChartCard(weeks = weeks, useLbs = useLbs,
-                        lineColor = MaterialTheme.colorScheme.primary,
-                        gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
-                }
-
-                item {
-                    Text("Week by Week",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground)
-                }
-
-                items(weeks.reversed()) { week ->
-                    WeekCard(week = week, useLbs = useLbs, bestWeight = bestEver?.maxWeight ?: 0f)
-                }
-            }
-
-            // ── All Sets tab ──────────────────────────────────────────────────
-            if (selectedTab == 1) {
-                val sessions = buildSessionGroups(allSets, useLbs)
-
-                if (sessions.isNotEmpty()) {
                     item {
-                        AllSetsChartCard(sessions = sessions, useLbs = useLbs,
-                            primaryColor = MaterialTheme.colorScheme.primary,
-                            gridColor    = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
+                        WeeklyChartCard(weeks = weeks, useLbs = useLbs,
+                            lineColor = MaterialTheme.colorScheme.primary,
+                            gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
+                    }
+
+                    item {
+                        Text("Week by Week",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground)
+                    }
+
+                    items(weeks.reversed(), key = { "week_${it.weekKey}" }) { week ->
+                        WeekCard(week = week, useLbs = useLbs, bestWeight = bestEver?.maxWeight ?: 0f)
                     }
                 }
 
-                item {
-                    Text("Session Breakdown",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground)
-                }
+                // ── All Sets tab ──────────────────────────────────────────────────
+                if (selectedTab == 1) {
+                    val sessions = buildSessionGroups(allSets, useLbs)
 
-                items(sessions.reversed()) { session ->
-                    SessionSetCard(session = session, useLbs = useLbs, bestWeight = bestEver?.maxWeight ?: 0f)
+                    if (sessions.isNotEmpty()) {
+                        item {
+                            AllSetsChartCard(sessions = sessions, useLbs = useLbs,
+                                primaryColor = MaterialTheme.colorScheme.primary,
+                                gridColor    = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f))
+                        }
+                    }
+
+                    item {
+                        Text("Session Breakdown",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground)
+                    }
+
+                    items(sessions.reversed(), key = { "session_${it.date}" }) { session ->
+                        SessionSetCard(session = session, useLbs = useLbs, bestWeight = bestEver?.maxWeight ?: 0f)
+                    }
                 }
             }
         }
@@ -268,8 +267,7 @@ private fun WeeklyChartCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
                     textAlign = TextAlign.Center)
-                return@Column
-            }
+            } else {
 
             val colWidthDp: Dp = 56.dp
             val chartWidth    = (colWidthDp * weeks.size).coerceAtLeast(300.dp)
@@ -288,12 +286,12 @@ private fun WeeklyChartCard(
                             modifier = Modifier.height(140.dp).width(40.dp),
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(WeightUnit.format(if (useLbs) maxW else maxW, useLbs),
+                            Text(WeightUnit.format(maxW, useLbs),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 9.sp)
-                            Text(WeightUnit.format(if (useLbs) minW else minW, useLbs),
+                            Text(WeightUnit.format(minW, useLbs),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 9.sp)
@@ -358,6 +356,7 @@ private fun WeeklyChartCard(
                     }
                 }
             }
+            } // end else (weeks.size >= 2)
         }
     }
 }
@@ -392,7 +391,7 @@ private fun AllSetsChartCard(
             }
             Spacer(Modifier.height(8.dp))
 
-            if (sessions.isEmpty()) return@Column
+            if (sessions.isNotEmpty()) {
 
             val allWeights = sessions.flatMap { s ->
                 s.sets.map { if (useLbs) it.weight * 2.20462f else it.weight }
@@ -413,12 +412,12 @@ private fun AllSetsChartCard(
                             modifier = Modifier.height(180.dp).width(40.dp),
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(WeightUnit.format(if (useLbs) globalMax else globalMax, useLbs),
+                            Text(WeightUnit.format(globalMax, useLbs),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 9.sp)
-                            Text(WeightUnit.format(if (useLbs) globalMin else globalMin, useLbs),
+                            Text(WeightUnit.format(globalMin, useLbs),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 9.sp)
@@ -440,7 +439,7 @@ private fun AllSetsChartCard(
                             val maxPath = Path()
                             sessions.forEachIndexed { idx, session ->
                                 val cx  = step * idx + step / 2
-                                val maxW = if (useLbs) session.maxWeight else session.maxWeight
+                                val maxW = if (useLbs) session.maxWeight * 2.20462f else session.maxWeight
                                 val y   = padT + chartH * (1f - (maxW - globalMin) / range)
                                 if (idx == 0) maxPath.moveTo(cx, y) else maxPath.lineTo(cx, y)
                             }
@@ -449,8 +448,8 @@ private fun AllSetsChartCard(
                             // Per-session: range bar + set dots
                             sessions.forEachIndexed { idx, session ->
                                 val cx    = step * idx + step / 2
-                                val maxW  = if (useLbs) session.maxWeight else session.maxWeight
-                                val minW  = if (useLbs) session.minWeight else session.minWeight
+                                val maxW  = if (useLbs) session.maxWeight * 2.20462f else session.maxWeight
+                                val minW  = if (useLbs) session.minWeight * 2.20462f else session.minWeight
                                 val yMax  = padT + chartH * (1f - (maxW - globalMin) / range)
                                 val yMin  = padT + chartH * (1f - (minW - globalMin) / range)
 
@@ -499,6 +498,7 @@ private fun AllSetsChartCard(
                     }
                 }
             }
+            } // end if (sessions.isNotEmpty())
         }
     }
 }
