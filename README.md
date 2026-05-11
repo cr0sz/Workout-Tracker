@@ -1,92 +1,106 @@
-# Workout Tracker
+🏋️ Workout Tracker
 
-An Android app for logging and managing workout sessions. Built with Kotlin and MVVM architecture, with full offline support and optional Firebase cloud sync.
+An offline-first fitness tracking app for logging workouts, building programs, tracking progress, and getting AI-powered coaching based on your real training data.
 
-<br>
+Built with Kotlin (MVVM), Firebase, and a focus on speed, usability, and real gym workflows.
 
-<img src="screenshots/home.jpeg" width="250"> <img src="screenshots/exercises.jpeg" width="250"> <img src="screenshots/programs.jpeg" width="250"> <img src="screenshots/tools.jpeg" width="250">
+📥 Download
 
-<br>
+👉 Download APK v1.2
 
-## Download
+Enable “Install from unknown sources” on Android to install.
 
-**[Download APK v1.1.0](https://github.com/cr0sz/Workout-Tracker/releases/tag/v1.1.0)**
+✨ Features
+🏋️ Workout Logging
+Log exercises with sets, reps, and weight
+Bodyweight exercise support
+Edit/delete individual sets
+Workout notes per session
+Smart progressive overload suggestions
+Fast one-tap logging flow
+📅 Programs & Templates
+Built-in workout programs
+Custom program builder (weekly splits)
+Save workouts as reusable templates
+Auto-advance program days
+Structured training flow
+🏃 Cardio Tracking
+Manual cardio logging (distance, duration, calories)
+Live GPS route tracking (OSMDroid)
+Cardio history and performance trends
+📊 Analytics & History
+Personal records (PR tracking)
+Volume progression over time
+Muscle group heatmap
+Exercise progression charts
+Weekly workout stats & streak tracking
+Full workout calendar view
+🛠 Tools
+Plate calculator (barbell loading assistant)
+1RM calculator (Epley formula)
+Bodyweight tracking with trend graphs
+🤖 AI Coach
+AI chat trained on your workout history
+Personalized strength & hypertrophy advice
+Goal-based recommendations
+Multi-language support (EN, TR, DE, ES, FR)
+☁️ Data & Sync
+Fully offline-first (no internet required)
+Firebase cloud sync (Google Sign-In)
+CSV export/import for full data ownership
+⚙️ Settings
+Dark / light mode
+kg / lbs toggle
+Rest timer (30–180s)
+Daily reminders
+Onboarding flow
+Language selection
+📸 Screenshots
+<p float="left"> <img src="assets/screenshots/home.jpeg" width="250"/> <img src="assets/screenshots/workout.jpeg" width="250"/> <img src="assets/screenshots/cardio.jpeg" width="250"/> <img src="assets/screenshots/analytics.jpeg" width="250"/> <img src="assets/screenshots/tools.jpeg" width="250"/> <img src="assets/screenshots/ai.jpeg" width="250"/> </p>
+🧠 Architecture
 
-> Enable "Install from unknown sources" in your Android settings before installing.
+MVVM Clean Architecture:
 
-<br>
-
-## Features
-
-- Create and manage workout programs
-- Log exercises with sets, reps, and weights
-- Full offline support — no internet required
-- Cloud sync via Firebase Firestore
-- Google account authentication
-- Export workouts as CSV
-- Input validation and error handling
-- Clean, minimal UI
-
-<br>
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | Kotlin |
-| Architecture | MVVM |
-| Local database | Room (SQLite) |
-| Cloud database | Firebase Firestore |
-| Authentication | Firebase Auth (Google Sign-In) |
-| UI | Android SDK, Jetpack components |
-
-<br>
-
-## Architecture
-
-The app follows MVVM for a clean separation of concerns:
-
-```
-UI Layer (Activities / Fragments)
-    ↕
-ViewModel Layer (business logic, state management)
-    ↕
+UI (Activities / Fragments)
+        ↓
+ViewModel (state + logic)
+        ↓
 Repository Layer
-    ↕
-Room Database (local)   ←→   Firebase Firestore (cloud)
-```
-
-This structure keeps the UI completely independent from the data layer, making the codebase easy to maintain and extend.
-
-<br>
-
-## Build from Source
-
-1. Clone the repository
-```bash
+        ↓
+Room DB (local) ↔ Firebase Firestore (cloud)
+🛠 Tech Stack
+Kotlin
+MVVM Architecture
+Room (SQLite)
+Firebase Firestore
+Firebase Auth (Google Sign-In)
+OSMDroid (GPS maps)
+Jetpack components
+🚀 Build from Source
 git clone https://github.com/cr0sz/Workout-Tracker.git
-```
 
-2. Open in Android Studio
+Then open in Android Studio:
 
-3. Add your own `google-services.json` from [Firebase Console](https://console.firebase.google.com/) to `/app`
+Add google-services.json
+Configure Firebase project
+Add SHA-1 fingerprint in Firebase Console
+Build & run
+🧭 Roadmap
+ Wear OS support
+ Workout sharing system
+ AI training split generator
+ Advanced analytics dashboard
+ Home screen widget for quick logging
+⚡ Why this app
+Fast logging (<2 seconds per set)
+Fully offline usable
+No subscription or paywall
+Own your data (CSV export/import)
+AI that understands YOUR progress
+Built for real gym use, not casual fitness tracking
+👤 Author
 
-4. Register your debug SHA-1 fingerprint in Firebase Console → Project Settings → Your apps
+Bekir Akyüz
+GitHub: https://github.com/cr0sz
 
-5. Build and run on an emulator or physical device
-
-<br>
-
-## Roadmap
-
-- [ ] Workout analytics and progress charts
-- [ ] ML-powered workout recommendations
-- [ ] Import workouts from CSV
-- [ ] Home screen widget for quick logging
-
-<br>
-
-## Author
-
-**Bekir Akyüz**
-[github.com/cr0sz](https://github.com/cr0sz) · [linkedin.com/in/bekirakyüz](www.linkedin.com/in/bekirakyüz)
+LinkedIn: www.linkedin.com/in/bekirakyüz
