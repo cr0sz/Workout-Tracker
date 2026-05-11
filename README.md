@@ -86,6 +86,18 @@ Built with Kotlin (MVVM), Firebase, and a focus on speed, usability, and real gy
 
 ## 📸 Screenshots
 
-(Add screenshots here)
+<p float="left"> <img src="assets/screenshots/home.jpeg" width="250"/> <img src="assets/screenshots/workout.jpeg" width="250"/> <img src="assets/screenshots/cardio.jpeg" width="250"/> <img src="assets/screenshots/analytics.jpeg" width="250"/> <img src="assets/screenshots/tools.jpeg" width="250"/> <img src="assets/screenshots/ai.jpeg" width="250"/> </p>
 
 ---
+
+🧠 Architecture
+
+MVVM Clean Architecture:
+
+UI (Activities / Fragments)
+        ↓
+ViewModel (state + logic)
+        ↓
+Repository Layer
+        ↓
+Room DB (local) ↔ Firebase Firestore (cloud)
